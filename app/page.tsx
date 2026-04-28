@@ -151,7 +151,7 @@ export default function Home() {
               الأكبر لقطاع <span className="text-green-700">الأغذية</span>
             </h1>
             <p className="text-gray-500 text-lg leading-relaxed mb-8">
-              نربط المصانع والموردين مباشرة مع تجار التجزئة والمطاعم.<br />
+              نربط المصانع والموردين مباشرة مع تجار الجملة والتجزئة والمطاعم.<br />
               أسعار المصنع، عروض تصفية، وتوريد يومي في مكان واحد.
             </p>
             <div className="flex gap-8">
