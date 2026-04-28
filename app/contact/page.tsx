@@ -1,8 +1,7 @@
 "use client";
 import { useState } from "react";
 
-const BOT_TOKEN = "8782771855:AAGmosrUfAKDB4_WRQ9jUFyOKAt8ACMg4Xw";
-const CHAT_ID   = "7426755981";
+
 
 export default function ContactPage() {
   const [name, setName]       = useState("");
@@ -16,17 +15,42 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const tgMessage = `📧 رسالة تواصل جديدة — منصة حاوية\n\n👤 الاسم: ${name}\n📞 الجوال: ${phone}\n✉️ الإيميل: ${email}\n🏷️ نوع الرسالة: ${type}\n\n📝 المحتوى:\n${message}`;
+  
+    const tgMessage = `📧 رسالة تواصل جديدة — منصة حاوية
+  
+  👤 الاسم: ${name}
+  📞 الجوال: ${phone}
+  ✉️ الإيميل: ${email}
+  🏷️ نوع الرسالة: ${type}
+  
+  📝 المحتوى:
+  ${message}`;
+  
     try {
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      const res = await fetch("/api/telegram", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: CHAT_ID, text: tgMessage }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: tgMessage }),
       });
+  
+      const data = await res.json();
+  
+      if (!res.ok || !data.ok) {
+        throw new Error("Telegram send failed");
+      }
+  
       setSuccess(true);
-      setName(""); setPhone(""); setEmail(""); setMessage("");
-    } catch (_) {}
-    setLoading(false);
+      setName("");
+      setPhone("");
+      setEmail("");
+      setMessage("");
+    } catch (err) {
+      alert("تعذر إرسال الرسالة، تأكد من إعدادات التليجرام في السيرفر.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

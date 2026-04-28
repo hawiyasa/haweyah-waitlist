@@ -1,40 +1,40 @@
 @import "tailwindcss";
 
 * {
-  -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 html, body {
+  margin: 0;
+  padding: 0;
   -webkit-overflow-scrolling: touch;
-  cursor: pointer;
 }
 
-button, a, [role="button"], input, select, textarea, label {
-  touch-action: manipulation;
+body {
+  min-height: 100vh;
+}
+
+button, a, input, select, textarea, label {
   -webkit-tap-highlight-color: transparent;
-  cursor: pointer;
-  /* إضافة مهمة لحل مشكلة اللمس في سفاري */
-  position: relative;
-  z-index: 1;
+  touch-action: manipulation;
 }
 
 button {
   -webkit-appearance: none;
   appearance: none;
+  border: 0;
+  background: none;
 }
 
 a {
   text-decoration: none;
 }
 
-nav {
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-}
-
-/* حل مشكلة تجميد اللمس داخل القوائم المتحركة أفقياً في سفاري */
 .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
-  transform: translateZ(0);
 }

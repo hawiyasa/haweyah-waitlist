@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { getProducts, Product } from "./lib/products";
 
-const BOT_TOKEN = "8782771855:AAGmosrUfAKDB4_WRQ9jUFyOKAt8ACMg4Xw";
-const CHAT_ID   = "7426755981";
+
 
 function FeaturedProducts() {
   const [featured, setFeatured] = useState<Product[]>([]);
@@ -73,17 +72,37 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+  
     const typeLabel = userType === "supplier" ? "مورد / مصنع" : "مشتري / تاجر";
-    const msg = `طلب انضمام جديد — منصة حاوية\n\nالنوع: ${typeLabel}\nالشركة: ${company}\nالمسؤول: ${name}\nالجوال: ${phone}\nالمدينة: ${city}`;
+    const msg = `طلب انضمام جديد — منصة حاوية
+  
+  النوع: ${typeLabel}
+  الشركة: ${company}
+  المسؤول: ${name}
+  الجوال: ${phone}
+  المدينة: ${city}`;
+  
     try {
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      const res = await fetch("/api/telegram", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: CHAT_ID, text: msg }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: msg }),
       });
-    } catch (_) {}
-    setLoading(false);
-    setSuccess(true);
+  
+      const data = await res.json();
+  
+      if (!res.ok || !data.ok) {
+        throw new Error("Telegram send failed");
+      }
+  
+      setSuccess(true);
+    } catch (err) {
+      alert("تعذر إرسال الطلب، تأكد من إعدادات التليجرام في السيرفر.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const sections = [
@@ -159,15 +178,45 @@ export default function Home() {
               <>
                 <h2 className="text-center font-bold text-gray-900 mb-1">انضم لقائمة الانتظار</h2>
                 <p className="text-center text-xs text-gray-400 mb-5">سجّل الآن لتكون من أوائل المستفيدين فور الإطلاق</p>
-                <div className="flex bg-gray-100 p-1 rounded-lg mb-5">
-                  {(["buyer","supplier"] as const).map(t => (
-                    <button key={t} type="button" onClick={() => setUserType(t)}
-                      className={`flex-1 py-2.5 text-sm font-bold rounded-md transition-all
-                        ${userType === t ? "bg-white text-green-700 shadow-sm border border-gray-200" : "text-gray-500"}`}>
-                      {t === "buyer" ? "مشتري / تاجر" : "مورد / مصنع"}
-                    </button>
-                  ))}
-                </div>
+                <div className="grid grid-cols-2 bg-gray-100 p-1 rounded-lg mb-5">
+  <input
+    id="buyer"
+    name="userType"
+    type="radio"
+    className="sr-only"
+    checked={userType === "buyer"}
+    onChange={() => setUserType("buyer")}
+  />
+  <label
+    htmlFor="buyer"
+    className={`text-center py-2.5 text-sm font-bold rounded-md transition-all select-none ${
+      userType === "buyer"
+        ? "bg-white text-green-700 shadow-sm border border-gray-200"
+        : "text-gray-500"
+    }`}
+  >
+    مشتري / تاجر
+  </label>
+
+  <input
+    id="supplier"
+    name="userType"
+    type="radio"
+    className="sr-only"
+    checked={userType === "supplier"}
+    onChange={() => setUserType("supplier")}
+  />
+  <label
+    htmlFor="supplier"
+    className={`text-center py-2.5 text-sm font-bold rounded-md transition-all select-none ${
+      userType === "supplier"
+        ? "bg-white text-green-700 shadow-sm border border-gray-200"
+        : "text-gray-500"
+    }`}
+  >
+    مورد / مصنع
+  </label>
+</div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     {[
