@@ -94,14 +94,8 @@ export default function Home() {
     setUserType("buyer");
   };
 
-  const handleSendClick = async () => {
-    if (!company.trim() || !city.trim() || !name.trim() || !phone.trim()) {
-      alert("الرجاء تعبئة جميع الحقول المطلوبة");
-      return;
-    }
-
+  const submitForm = async () => {
     if (loading) return;
-
     setLoading(true);
 
     const typeLabel = userType === "supplier" ? "مورد / مصنع" : "مشتري / تاجر";
@@ -245,13 +239,20 @@ export default function Home() {
                   </select>
                 </div>
 
-                <div className="space-y-4">
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    submitForm();
+                  }} 
+                  className="space-y-4"
+                >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-gray-700">
                         اسم الشركة / المؤسسة <span className="text-red-500">*</span>
                       </label>
                       <input
+                        required
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
                         placeholder="مثال: مؤسسة النور..."
@@ -264,6 +265,7 @@ export default function Home() {
                         المدينة <span className="text-red-500">*</span>
                       </label>
                       <input
+                        required
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         placeholder="جدة، الرياض..."
@@ -277,6 +279,7 @@ export default function Home() {
                       اسم المسؤول <span className="text-red-500">*</span>
                     </label>
                     <input
+                      required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="الاسم الكامل"
@@ -289,6 +292,7 @@ export default function Home() {
                       رقم الجوال <span className="text-red-500">*</span>
                     </label>
                     <input
+                      required
                       dir="ltr"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -299,14 +303,13 @@ export default function Home() {
                   </div>
 
                   <button
-                    type="button"
-                    onClick={handleSendClick}
+                    type="submit"
                     disabled={loading}
                     className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-70 text-white font-bold py-3 rounded-lg transition-all shadow-md cursor-pointer text-center"
                   >
                     {loading ? "جاري إرسال الطلب..." : "تأكيد الطلب والانضمام"}
                   </button>
-                </div>
+                </form>
               </>
             )}
           </div>
