@@ -23,14 +23,14 @@ body {
   min-height: 100vh;
 }
 
-button,
 a,
+button,
 input,
 select,
 textarea,
 label {
-  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 button,
@@ -60,12 +60,11 @@ img {
   overscroll-behavior-x: contain;
 }
 
-.ios-click {
-  position: relative;
-  z-index: 20;
-  pointer-events: auto;
-}
-
 .ios-overlay {
   pointer-events: none;
+}
+
+.ios-hit {
+  position: relative;
+  z-index: 30;
 }

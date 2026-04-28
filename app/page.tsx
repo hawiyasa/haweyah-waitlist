@@ -27,7 +27,7 @@ function FeaturedProducts() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {featured.map((p) => (
-        <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:-translate-y-1 hover:shadow-md transition-all">
+        <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all">
           <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
             {p.image ? (
               <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
@@ -42,6 +42,7 @@ function FeaturedProducts() {
               </span>
             )}
           </div>
+
           <div className="p-3">
             <div className="text-xs text-gray-400 mb-1">{p.category}</div>
             <div className="font-bold text-gray-900 text-sm leading-tight mb-1">{p.name}</div>
@@ -71,10 +72,12 @@ export default function Home() {
       setScrolled(window.scrollY > 10);
       const secs = ["home", "offers", "suppliers", "europe"];
       let cur = "home";
+
       secs.forEach((id) => {
         const el = document.getElementById(id);
         if (el && window.scrollY >= el.offsetTop - 130) cur = id;
       });
+
       setActive(cur);
     };
 
@@ -124,7 +127,7 @@ export default function Home() {
       resetForm();
       setSuccess(true);
     } catch {
-      alert("تعذر إرسال الطلب، تأكد من إعدادات التليجرام في Vercel.");
+      alert("تعذر إرسال الطلب.");
     } finally {
       setLoading(false);
     }
@@ -151,7 +154,7 @@ export default function Home() {
           </a>
         </div>
 
-        <div className="max-w-5xl mx-auto px-6 ios-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="max-w-5xl mx-auto px-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="flex min-w-max">
             {sections.map((s) => (
               <a
@@ -201,7 +204,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div id="join-form" className="bg-white border border-gray-200 rounded-2xl p-8 shadow-xl relative z-10 ios-click">
+          <div id="join-form" className="bg-white border border-gray-200 rounded-2xl p-8 shadow-xl relative z-10">
             {success ? (
               <div className="text-center py-8 bg-green-50 rounded-xl">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -211,57 +214,31 @@ export default function Home() {
                 </div>
                 <h3 className="text-lg font-bold text-green-800 mb-2">تم استلام طلبك بنجاح!</h3>
                 <p className="text-sm text-gray-500 mb-4">سيتواصل معك فريق المبيعات قريباً لإكمال إجراءات التفعيل.</p>
-                <button
-                  type="button"
-                  onClick={() => setSuccess(false)}
-                  className="bg-green-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg"
-                >
+                <a href="/" className="inline-block bg-green-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg">
                   إرسال طلب جديد
-                </button>
+                </a>
               </div>
             ) : (
               <>
                 <h2 className="text-center font-bold text-gray-900 mb-1">انضم لقائمة الانتظار</h2>
                 <p className="text-center text-xs text-gray-400 mb-5">سجّل الآن لتكون من أوائل المستفيدين فور الإطلاق</p>
 
-                <div className="grid grid-cols-2 bg-gray-100 p-1 rounded-lg mb-5 ios-click">
-                  <label
-                    className={`cursor-pointer text-center py-2.5 text-sm font-bold rounded-md transition-all select-none ${
-                      userType === "buyer"
-                        ? "bg-white text-green-700 shadow-sm border border-gray-200"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="userType"
-                      className="sr-only"
-                      checked={userType === "buyer"}
-                      onChange={() => setUserType("buyer")}
-                    />
-                    مشتري / تاجر
+                <div className="mb-5">
+                  <label className="block text-xs font-bold text-gray-700 mb-2">
+                    نوع الحساب <span className="text-red-500">*</span>
                   </label>
-
-                  <label
-                    className={`cursor-pointer text-center py-2.5 text-sm font-bold rounded-md transition-all select-none ${
-                      userType === "supplier"
-                        ? "bg-white text-green-700 shadow-sm border border-gray-200"
-                        : "text-gray-500"
-                    }`}
+                  <select
+                    value={userType}
+                    onChange={(e) => setUserType(e.target.value as "buyer" | "supplier")}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-lg text-[16px] bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
                   >
-                    <input
-                      type="radio"
-                      name="userType"
-                      className="sr-only"
-                      checked={userType === "supplier"}
-                      onChange={() => setUserType("supplier")}
-                    />
-                    مورد / مصنع
-                  </label>
+                    <option value="buyer">مشتري / تاجر</option>
+                    <option value="supplier">مورد / مصنع</option>
+                  </select>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4 ios-click">
-                  <div className="grid grid-cols-2 gap-3">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-gray-700">
                         اسم الشركة / المؤسسة <span className="text-red-500">*</span>
@@ -271,7 +248,7 @@ export default function Home() {
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
                         placeholder="مثال: مؤسسة النور..."
-                        className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+                        className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
                       />
                     </div>
 
@@ -284,7 +261,7 @@ export default function Home() {
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         placeholder="جدة، الرياض..."
-                        className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+                        className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
                       />
                     </div>
                   </div>
@@ -298,7 +275,7 @@ export default function Home() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="الاسم الكامل"
-                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+                      className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
                     />
                   </div>
 
@@ -313,17 +290,16 @@ export default function Home() {
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="05XXXXXXXX"
                       type="tel"
-                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-right"
+                      className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-right"
                     />
                   </div>
 
-                  <button
+                  <input
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-70 text-white font-bold py-3 rounded-lg transition-all shadow-md hover:shadow-lg ios-click"
-                  >
-                    {loading ? "جاري إرسال الطلب..." : "تأكيد الطلب والانضمام"}
-                  </button>
+                    value={loading ? "جاري إرسال الطلب..." : "تأكيد الطلب والانضمام"}
+                    className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-70 text-white font-bold py-3 rounded-lg transition-all shadow-md cursor-pointer"
+                  />
                 </form>
               </>
             )}
@@ -347,7 +323,7 @@ export default function Home() {
           <FeaturedProducts />
 
           <div className="text-center mt-8">
-            <a href="/products" className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg">
+            <a href="/products" className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-md">
               مشاهدة جميع المنتجات ←
             </a>
           </div>
@@ -375,7 +351,7 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20 overflow-y-auto ios-overlay">
+            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20 overflow-y-auto">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
                   <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
@@ -432,7 +408,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20 overflow-y-auto ios-overlay">
+            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20 overflow-y-auto">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
                   <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />

@@ -39,7 +39,7 @@ export default function ProductsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="🔍 ابحث عن منتج..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
           />
           <a href="/" className="text-sm text-gray-500 hover:text-green-700 shrink-0">← الرئيسية</a>
         </div>
@@ -51,30 +51,19 @@ export default function ProductsPage() {
           <p className="text-gray-500 mt-1">تصفح المنتجات واطلب مباشرة عبر واتساب — بدون تسجيل</p>
         </div>
 
-        <div className="md:hidden mb-6 ios-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <div className="flex gap-2 pb-2 px-1 w-max ios-click">
-            {categories.map((cat, i) => (
-              <label
-                key={cat}
-                htmlFor={`mobile-cat-${i}`}
-                className={`cursor-pointer whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold transition-all select-none ${
-                  activeCategory === cat
-                    ? "bg-green-700 text-white"
-                    : "bg-white text-gray-600 border border-gray-200 shadow-sm"
-                }`}
-              >
-                <input
-                  id={`mobile-cat-${i}`}
-                  type="radio"
-                  name="mobile-category"
-                  className="sr-only"
-                  checked={activeCategory === cat}
-                  onChange={() => setActiveCategory(cat)}
-                />
+        <div className="md:hidden mb-6">
+          <label className="block text-xs font-bold text-gray-700 mb-2">القسم</label>
+          <select
+            value={activeCategory}
+            onChange={(e) => setActiveCategory(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
                 {cat}
-              </label>
+              </option>
             ))}
-          </div>
+          </select>
         </div>
 
         <div className="flex gap-6">
@@ -85,15 +74,7 @@ export default function ProductsPage() {
               </div>
 
               {categories.map((cat, i) => (
-                <label
-                  key={cat}
-                  htmlFor={`desktop-cat-${i}`}
-                  className={`block w-full cursor-pointer text-right px-4 py-3 text-sm transition-all border-b border-gray-50 last:border-0 ${
-                    activeCategory === cat
-                      ? "bg-green-50 text-green-700 font-bold"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
+                <div key={cat}>
                   <input
                     id={`desktop-cat-${i}`}
                     type="radio"
@@ -102,8 +83,17 @@ export default function ProductsPage() {
                     checked={activeCategory === cat}
                     onChange={() => setActiveCategory(cat)}
                   />
-                  {cat}
-                </label>
+                  <label
+                    htmlFor={`desktop-cat-${i}`}
+                    className={`block w-full cursor-pointer text-right px-4 py-3 text-sm transition-all border-b border-gray-50 last:border-0 ${
+                      activeCategory === cat
+                        ? "bg-green-50 text-green-700 font-bold"
+                        : "bg-white text-gray-600"
+                    }`}
+                  >
+                    {cat}
+                  </label>
+                </div>
               ))}
             </div>
           </aside>
@@ -130,7 +120,7 @@ export default function ProductsPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {filtered.map((p) => (
-                    <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                    <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all">
                       <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
                         {p.image ? (
                           <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
@@ -160,7 +150,7 @@ export default function ProductsPage() {
                           href={buildWaUrl(p)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-2 rounded-lg text-center ios-click"
+                          className="block w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-3 rounded-lg text-center"
                         >
                           💬 للطلب والتفاوض
                         </a>
