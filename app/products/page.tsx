@@ -50,12 +50,19 @@ export default function ProductsPage() {
         </div>
 
         {/* Categories Mobile */}
-        <div className="md:hidden mb-6 overflow-x-auto">
-          <div className="flex gap-2 pb-1" style={{width:"max-content"}}>
+        <div className="md:hidden mb-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex gap-2 pb-2 px-1" style={{width:"max-content"}}>
             {categories.map(cat => (
-              <button key={cat} onClick={() => setActiveCategory(cat)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold transition-all
-                  ${activeCategory === cat ? "bg-green-700 text-white" : "bg-white text-gray-600 border border-gray-200"}`}>
+              <button 
+                key={cat} 
+                /* استخدام onPointerDown لضمان استجابة فورية في سفاري */
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  setActiveCategory(cat);
+                }}
+                onClick={() => setActiveCategory(cat)}
+                className={`relative z-20 whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold transition-all select-none
+                  ${activeCategory === cat ? "bg-green-700 text-white" : "bg-white text-gray-600 border border-gray-200 shadow-sm"}`}>
                 {cat}
               </button>
             ))}

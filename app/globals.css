@@ -14,6 +14,9 @@ button, a, [role="button"], input, select, textarea, label {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
+  /* إضافة مهمة لحل مشكلة اللمس في سفاري */
+  position: relative;
+  z-index: 1;
 }
 
 button {
@@ -27,5 +30,11 @@ a {
 
 nav {
   -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* حل مشكلة تجميد اللمس داخل القوائم المتحركة أفقياً في سفاري */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
   transform: translateZ(0);
 }
