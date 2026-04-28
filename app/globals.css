@@ -1,14 +1,20 @@
 @import "tailwindcss";
+
 * {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  html, body {
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  button, a, [role="button"], input, select, textarea {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    cursor: pointer;
-  }
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  -webkit-overflow-scrolling: touch;
+}
+
+button, a, [role="button"], input, select, textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+nav {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
