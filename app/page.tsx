@@ -106,8 +106,7 @@ export default function Home() {
     <div dir="rtl" className="min-h-screen bg-white font-sans">
 
       {/* إضافة transform-gpu لحل مشكلة سفاري مع الطبقات واللمس */}
-      <nav className={`sticky top-0 z-[100] transform-gpu bg-white/95 backdrop-blur-lg border-b border-gray-200 transition-shadow ${scrolled ? "shadow-sm" : ""}`}>
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between border-b border-gray-100">
+      <nav className={`sticky top-0 z-[100] bg-white border-b border-gray-200 transition-shadow ${scrolled ? "shadow-sm" : ""}`}>        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between border-b border-gray-100">
 
           <button type="button" onClick={() => scrollTo("home")} className="flex items-center gap-2.5 cursor-pointer touch-manipulation">
             <img
