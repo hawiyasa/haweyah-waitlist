@@ -29,14 +29,8 @@ export default function Dashboard() {
   const openEdit = (p: Product) => {
     setEditing(p)
     setForm({
-      name: p.name, 
-      category: p.category, 
-      price: p.price, 
-      unit: p.unit,
-      image: p.image || "", 
-      badge: p.badge || "", 
-      description: p.description || "", 
-      minOrder: p.minOrder || ""
+      name: p.name, category: p.category, price: p.price, unit: p.unit,
+      image: p.image || "", badge: p.badge || "", description: p.description || "", minOrder: p.minOrder || ""
     })
     setShowForm(true)
   }
@@ -84,7 +78,10 @@ export default function Dashboard() {
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans">
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
-        <h1 className="text-xl font-extrabold text-green-800">⚙️ لوحة التحكم — حاوية</h1>
+        <div className="flex items-center gap-4">
+          <a href="/" className="text-gray-400 hover:text-green-700 text-sm no-underline">← الرئيسية</a>
+          <h1 className="text-xl font-extrabold text-green-800">⚙️ لوحة التحكم — حاوية</h1>
+        </div>
         <button onClick={openAdd}
           className="bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-green-800 transition-colors">
           + إضافة منتج
@@ -145,7 +142,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -153,12 +149,9 @@ export default function Dashboard() {
               {editing ? "✏️ تعديل المنتج" : "➕ إضافة منتج جديد"}
             </h2>
             <form onSubmit={saveForm} className="space-y-4">
-
-              {/* صورة المنتج */}
               <div>
                 <label className="text-xs font-bold text-gray-700 block mb-2">صورة المنتج</label>
-                <div
-                  onClick={() => fileRef.current?.click()}
+                <div onClick={() => fileRef.current?.click()}
                   className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-green-500 transition-colors">
                   {form.image ? (
                     <img src={form.image} alt="preview" className="w-full h-40 object-cover rounded-lg" />

@@ -1,13 +1,10 @@
-// app/contact/page.tsx
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 const BOT_TOKEN = "8782771855:AAGmosrUfAKDB4_WRQ9jUFyOKAt8ACMg4Xw";
 const CHAT_ID   = "7426755981";
 
 export default function ContactPage() {
-  const router = useRouter();
   const [name, setName]       = useState("");
   const [phone, setPhone]     = useState("");
   const [email, setEmail]     = useState("");
@@ -19,9 +16,7 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
     const tgMessage = `📧 رسالة تواصل جديدة — منصة حاوية\n\n👤 الاسم: ${name}\n📞 الجوال: ${phone}\n✉️ الإيميل: ${email}\n🏷️ نوع الرسالة: ${type}\n\n📝 المحتوى:\n${message}`;
-    
     try {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: "POST",
@@ -38,15 +33,15 @@ export default function ContactPage() {
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <button onClick={() => router.push("/")} className="text-2xl font-extrabold text-green-800">حاوية</button>
-          <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-green-700">← العودة للرئيسية</button>
+          <a href="/" className="text-2xl font-extrabold text-green-800 no-underline">حاوية</a>
+          <a href="/" className="text-sm text-gray-500 hover:text-green-700 no-underline">← العودة للرئيسية</a>
         </div>
       </header>
 
       <div className="max-w-3xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-extrabold text-gray-900 mb-4">تواصل معنا</h1>
-          <p className="text-gray-600 max-w-lg mx-auto">فريق مبيعات حاوية جاهز للإجابة على كافة استفساراتكم. نسعد بتواصل الموردين، التجار، وشركاء النجاح.</p>
+          <p className="text-gray-600 max-w-lg mx-auto">فريق مبيعات حاوية جاهز للإجابة على كافة استفساراتكم.</p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
@@ -64,22 +59,26 @@ export default function ContactPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-bold text-gray-700">الاسم الكامل <span className="text-red-500">*</span></label>
-                  <input required value={name} onChange={e => setName(e.target.value)} className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
+                  <input required value={name} onChange={e => setName(e.target.value)}
+                    className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-bold text-gray-700">رقم الجوال <span className="text-red-500">*</span></label>
-                  <input required dir="ltr" type="tel" placeholder="05XXXXXXXX" value={phone} onChange={e => setPhone(e.target.value)} className="px-4 py-2.5 border border-gray-300 rounded-lg text-right focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
+                  <input required dir="ltr" type="tel" placeholder="05XXXXXXXX" value={phone} onChange={e => setPhone(e.target.value)}
+                    className="px-4 py-2.5 border border-gray-300 rounded-lg text-right focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-bold text-gray-700">البريد الإلكتروني</label>
-                  <input type="email" dir="ltr" placeholder="name@company.com" value={email} onChange={e => setEmail(e.target.value)} className="px-4 py-2.5 border border-gray-300 rounded-lg text-right focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
+                  <input type="email" dir="ltr" placeholder="name@company.com" value={email} onChange={e => setEmail(e.target.value)}
+                    className="px-4 py-2.5 border border-gray-300 rounded-lg text-right focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-bold text-gray-700">نوع الرسالة</label>
-                  <select value={type} onChange={e => setType(e.target.value)} className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none bg-white">
+                  <select value={type} onChange={e => setType(e.target.value)}
+                    className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none bg-white">
                     <option>استفسار عام</option>
                     <option>الانضمام كمورد / مصنع</option>
                     <option>شكوى / اقتراح</option>
@@ -90,11 +89,14 @@ export default function ContactPage() {
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-bold text-gray-700">الرسالة <span className="text-red-500">*</span></label>
-                <textarea required rows={4} value={message} onChange={e => setMessage(e.target.value)} placeholder="اكتب استفسارك هنا..." className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none resize-none"></textarea>
+                <textarea required rows={4} value={message} onChange={e => setMessage(e.target.value)}
+                  placeholder="اكتب استفسارك هنا..."
+                  className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none resize-none"></textarea>
               </div>
 
               <div className="pt-4">
-                <button type="submit" disabled={loading} className="w-full md:w-auto px-8 py-3 bg-green-700 hover:bg-green-800 disabled:bg-gray-400 text-white font-bold rounded-lg transition-colors">
+                <button type="submit" disabled={loading}
+                  className="w-full md:w-auto px-8 py-3 bg-green-700 hover:bg-green-800 disabled:bg-gray-400 text-white font-bold rounded-lg transition-colors">
                   {loading ? "جاري الإرسال..." : "إرسال الرسالة"}
                 </button>
               </div>

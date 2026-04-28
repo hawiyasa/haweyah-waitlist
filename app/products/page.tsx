@@ -1,21 +1,21 @@
 "use client"
-import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
 import { getProducts, CATEGORIES, Product } from "../lib/products"
 
 const WHATSAPP = "966535189367"
 
+function buildWaUrl(p: Product) {
+  const msg = encodeURIComponent(
+    `مرحباً، أود الاستفسار عن:\n📦 ${p.name}\n💰 السعر: ${p.price} ﷼ / ${p.unit}\n📦 أقل كمية: ${p.minOrder ?? "غير محدد"}`
+  )
+  return `https://wa.me/${WHATSAPP}?text=${msg}`
+}
+
 export default function ProductsPage() {
-  const router = useRouter()
   const [products,       setProducts]       = useState<Product[]>([])
   const [activeCategory, setActiveCategory] = useState("الكل")
   const [search,         setSearch]         = useState("")
   const [loaded,         setLoaded]         = useState(false)
-
-  // ✅ القفل البرمجي الفوري لمنع أي ضغطة مزدوجة
-  const clickLock = useRef(false)
-  // ✅ قفل بصري لتغيير شكل الزر للمستخدم
-  const [openingId, setOpeningId] = useState<string | null>(null)
 
   useEffect(() => {
     setProducts(getProducts())
@@ -30,45 +30,16 @@ export default function ProductsPage() {
     return matchCat && matchSearch
   })
 
-  const handleWhatsappClick = (e: React.MouseEvent, p: Product) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (clickLock.current) return
-    clickLock.current = true
-    setOpeningId(p.id)
-
-    const msg = encodeURIComponent(
-      `مرحباً، أود الاستفسار عن:\n📦 ${p.name}\n💰 السعر: ${p.price} ﷼ / ${p.unit}\n📦 أقل كمية: ${p.minOrder ?? "غير محدد"}`
-    )
-    const waUrl = `https://wa.me/${WHATSAPP}?text=${msg}`
-
-    // إنشاء عنصر <a> مؤقت، الضغط عليه، ثم إزالته
-    const tempLink = document.createElement("a")
-    tempLink.href = waUrl
-    tempLink.target = "_blank"
-    tempLink.rel = "noopener noreferrer"
-    document.body.appendChild(tempLink)
-    tempLink.click()
-    document.body.removeChild(tempLink) // مسحه فوراً بعد الضغط
-
-    setTimeout(() => {
-      clickLock.current = false
-      setOpeningId(null)
-    }, 2000)
-  }
-
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans">
 
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center gap-4">
-          <button onClick={() => router.push("/")} className="text-2xl font-extrabold text-green-800 shrink-0">حاوية</button>
+          <a href="/" className="text-2xl font-extrabold text-green-800 shrink-0 no-underline">حاوية</a>
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="🔍 ابحث عن منتج..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none" />
-          <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-green-700 shrink-0">← الرئيسية</button>
+          <a href="/" className="text-sm text-gray-500 hover:text-green-700 shrink-0 no-underline">← الرئيسية</a>
         </div>
       </header>
 
@@ -149,19 +120,13 @@ export default function ProductsPage() {
                           <div className="text-xs text-orange-600 font-bold mb-2">⚠️ أقل طلب: {p.minOrder}</div>
                         )}
                         <div className="text-base font-extrabold text-green-700 mb-3">{p.price} ﷼</div>
-                        
-                        {/* ✅ الزر الجديد مع تأثيرات القفل */}
-                        <button
-                          onClick={(e) => handleWhatsappClick(e, p)}
-                          disabled={openingId === p.id}
-                          className={`w-full font-bold text-xs py-2 rounded-lg transition-colors ${
-                            openingId === p.id
-                              ? "bg-gray-300 text-gray-600 cursor-not-allowed" // شكل الزر وهو مقفول
-                              : "bg-green-600 hover:bg-green-700 text-white"   // شكل الزر الطبيعي
-                          }`}>
-                          {openingId === p.id ? "⏳ جاري التحويل..." : "💬 للطلب والتفاوض"}
-                        </button>
-
+                        <a
+                          href={buildWaUrl(p)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-2 rounded-lg text-center no-underline">
+                          💬 للطلب والتفاوض
+                        </a>
                       </div>
                     </div>
                   ))}
@@ -171,23 +136,19 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
-      {/* ── FOOTER الاحترافي ── */}
+
       <footer className="bg-gray-900 pt-16 pb-8 border-t border-gray-800">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            
-            {/* العمود الأول: عن المنصة */}
             <div className="md:col-span-1">
               <div className="text-2xl font-extrabold text-white mb-4 tracking-tight flex items-center gap-2">
                 <div className="w-8 h-8 bg-green-700 text-white rounded-md flex items-center justify-center text-sm">ح</div>
                 حاوية
               </div>
               <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار التجزئة والمطاعم.
+                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية.
               </p>
             </div>
-
-            {/* العمود الثاني: المنصة */}
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
@@ -197,8 +158,6 @@ export default function ProductsPage() {
                 <li><a href="/#europe" className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
               </ul>
             </div>
-
-            {/* العمود الثالث: الشركة */}
             <div>
               <h4 className="text-white font-bold mb-4">الشركة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
@@ -208,8 +167,6 @@ export default function ProductsPage() {
                 <li><a href="/privacy" className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
               </ul>
             </div>
-
-            {/* العمود الرابع: تواصل */}
             <div>
               <h4 className="text-white font-bold mb-4">دعم العملاء</h4>
               <ul className="space-y-3 text-sm text-gray-400">
@@ -228,16 +185,12 @@ export default function ProductsPage() {
                 </li>
               </ul>
             </div>
-
           </div>
-          
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-500 text-xs">
               جميع الحقوق محفوظة © 2026 <strong className="text-gray-300 font-normal">منصة حاوية لتقنية المعلومات</strong>
             </p>
-            <div className="flex gap-4 text-gray-500">
-              <span className="text-xs">المملكة العربية السعودية - جدة</span>
-            </div>
+            <span className="text-xs text-gray-500">المملكة العربية السعودية - جدة</span>
           </div>
         </div>
       </footer>
