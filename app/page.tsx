@@ -212,7 +212,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-lg font-bold text-green-800 mb-2">تم استلام طلبك بنجاح!</h3>
                 <p className="text-sm text-gray-500 mb-4">سيتواصل معك فريق المبيعات قريباً لإكمال إجراءات التفعيل.</p>
-                <button 
+                <button
                   type="button"
                   onClick={() => setSuccess(false)}
                   className="bg-green-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg"
@@ -239,11 +239,13 @@ export default function Home() {
                   </select>
                 </div>
 
-                <form 
+                {/* ✅ التعديل الوحيد: action="javascript:void(0)" */}
+                <form
+                  action="javascript:void(0)"
                   onSubmit={(e) => {
                     e.preventDefault();
                     submitForm();
-                  }} 
+                  }}
                   className="space-y-4"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
