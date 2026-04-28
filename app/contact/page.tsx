@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
 
-
-
 export default function ContactPage() {
   const [name, setName]       = useState("");
   const [phone, setPhone]     = useState("");
@@ -12,8 +10,14 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendClick = async () => {
+    // تحقق يدوي بدل required
+    if (!name.trim() || !phone.trim() || !message.trim()) {
+      alert("الرجاء تعبئة الحقول المطلوبة (الاسم، الجوال، الرسالة)");
+      return;
+    }
+
+    if (loading) return;
     setLoading(true);
   
     const tgMessage = `📧 رسالة تواصل جديدة — منصة حاوية
@@ -47,7 +51,7 @@ export default function ContactPage() {
       setEmail("");
       setMessage("");
     } catch (err) {
-      alert("تعذر إرسال الرسالة، تأكد من إعدادات التليجرام في السيرفر.");
+      alert("تعذر إرسال الرسالة.");
     } finally {
       setLoading(false);
     }
@@ -76,31 +80,37 @@ export default function ContactPage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">تم استلام رسالتك بنجاح</h3>
               <p className="text-gray-500 mb-6">سيتواصل معك فريق خدمة العملاء في أقرب وقت ممكن.</p>
-              <button onClick={() => setSuccess(false)} className="text-green-700 font-bold text-sm hover:underline">إرسال رسالة أخرى</button>
+              <button 
+                type="button"
+                onClick={() => setSuccess(false)} 
+                className="text-green-700 font-bold text-sm hover:underline"
+              >
+                إرسال رسالة أخرى
+              </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-bold text-gray-700">الاسم الكامل <span className="text-red-500">*</span></label>
-                  <input required value={name} onChange={e => setName(e.target.value)}
+                  abel className="text-sm font-bold text-gray-700">الاسم الكامل <span className="text-red-500">*</span></label>
+                  <input value={name} onChange={e => setName(e.target.value)}
                     className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-bold text-gray-700">رقم الجوال <span className="text-red-500">*</span></label>
-                  <input required dir="ltr" type="tel" placeholder="05XXXXXXXX" value={phone} onChange={e => setPhone(e.target.value)}
+                  abel className="text-sm font-bold text-gray-700">رقم الجوال <span className="text-red-500">*</span></label>
+                  <input dir="ltr" type="tel" placeholder="05XXXXXXXX" value={phone} onChange={e => setPhone(e.target.value)}
                     className="px-4 py-2.5 border border-gray-300 rounded-lg text-right focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-bold text-gray-700">البريد الإلكتروني</label>
+                  abel className="text-sm font-bold text-gray-700">البريد الإلكتروني</label>
                   <input type="email" dir="ltr" placeholder="name@company.com" value={email} onChange={e => setEmail(e.target.value)}
                     className="px-4 py-2.5 border border-gray-300 rounded-lg text-right focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-bold text-gray-700">نوع الرسالة</label>
+                  abel className="text-sm font-bold text-gray-700">نوع الرسالة</label>
                   <select value={type} onChange={e => setType(e.target.value)}
                     className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none bg-white">
                     <option>استفسار عام</option>
@@ -112,19 +122,23 @@ export default function ContactPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-gray-700">الرسالة <span className="text-red-500">*</span></label>
-                <textarea required rows={4} value={message} onChange={e => setMessage(e.target.value)}
+                abel className="text-sm font-bold text-gray-700">الرسالة <span className="text-red-500">*</span></label>
+                <textarea rows={4} value={message} onChange={e => setMessage(e.target.value)}
                   placeholder="اكتب استفسارك هنا..."
                   className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none resize-none"></textarea>
               </div>
 
               <div className="pt-4">
-                <button type="submit" disabled={loading}
-                  className="w-full md:w-auto px-8 py-3 bg-green-700 hover:bg-green-800 disabled:bg-gray-400 text-white font-bold rounded-lg transition-colors">
+                <button 
+                  type="button" 
+                  onClick={handleSendClick}
+                  disabled={loading}
+                  className="w-full md:w-auto px-8 py-3 bg-green-700 hover:bg-green-800 disabled:bg-gray-400 text-white font-bold rounded-lg transition-colors text-center"
+                >
                   {loading ? "جاري الإرسال..." : "إرسال الرسالة"}
                 </button>
               </div>
-            </form>
+            </div>
           )}
         </div>
       </div>
