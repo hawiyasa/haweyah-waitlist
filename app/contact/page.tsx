@@ -6,8 +6,10 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // التحقق من الرابط بعد الإرسال (الحل الجذري لـ iOS)
     if (window.location.search.includes('success=1')) {
       setSuccess(true);
+      // تنظيف الرابط من علامة النجاح بعد التقاطها
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
@@ -16,8 +18,10 @@ export default function ContactPage() {
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans flex flex-col">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="text-2xl font-extrabold text-green-800">حاوية</a>
-          <a href="/" className="text-sm text-gray-500 hover:text-green-700 font-bold">← العودة للرئيسية</a>
+          <a href="/" className="text-2xl font-extrabold text-green-800 tracking-tight">حاوية</a>
+          <a href="/" className="text-sm text-gray-500 hover:text-green-700 font-bold transition-colors">
+            ← العودة للرئيسية
+          </a>
         </div>
       </header>
 
@@ -31,31 +35,68 @@ export default function ContactPage() {
                 </svg>
               </div>
               <h2 className="text-xl font-bold text-green-800 mb-2">تم إرسال رسالتك بنجاح!</h2>
-              <p className="text-gray-600 mb-6">سيتواصل معك فريق الدعم في أقرب وقت ممكن.</p>
-              <button onClick={() => setSuccess(false)} className="text-green-700 font-bold text-sm bg-white border border-green-200 px-4 py-2 rounded-lg">إرسال رسالة أخرى</button>
+              <p className="text-gray-600 mb-6 text-sm">سيتواصل معك فريق الدعم في أقرب وقت ممكن.</p>
+              <button 
+                onClick={() => setSuccess(false)} 
+                type="button" 
+                className="text-green-700 font-bold text-sm bg-white border border-green-200 px-5 py-2.5 rounded-lg hover:bg-green-50 transition-colors"
+              >
+                إرسال رسالة أخرى
+              </button>
             </div>
           ) : (
             <>
               <h1 className="text-3xl font-extrabold text-gray-900 mb-2 text-center">تواصل معنا</h1>
-              <p className="text-gray-500 text-center mb-8 text-sm">لديك استفسار أو اقتراح؟ يسعدنا تواصلك معنا وسنقوم بالرد عليك في أقرب وقت.</p>
+              <p className="text-gray-500 text-center mb-8 text-sm">
+                لديك استفسار أو اقتراح؟ يسعدنا تواصلك معنا وسنقوم بالرد عليك في أقرب وقت.
+              </p>
 
+              {/* استخدام Native HTML Form لتجاوز مشكلة iOS */}
               <form action="/api/contact" method="POST" className="space-y-5" onSubmit={() => setLoading(true)}>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">الاسم الكامل <span className="text-red-500">*</span></label>
-                  <input name="name" required placeholder="محمد أحمد..." className="w-full px-4 py-3 border border-gray-300 rounded-xl text-[16px] outline-none focus:border-green-500" />
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-bold text-gray-700">
+                    الاسم الكامل <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    name="name" 
+                    required 
+                    placeholder="محمد أحمد..." 
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-[16px] outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100" 
+                  />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">رقم الجوال <span className="text-red-500">*</span></label>
-                  <input name="phone" required dir="ltr" type="tel" placeholder="05XXXXXXXX" className="w-full px-4 py-3 border border-gray-300 rounded-xl text-[16px] outline-none text-right focus:border-green-500" />
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-bold text-gray-700">
+                    رقم الجوال <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    name="phone" 
+                    required 
+                    dir="ltr" 
+                    type="tel" 
+                    placeholder="05XXXXXXXX" 
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-[16px] outline-none text-right focus:border-green-500 focus:ring-2 focus:ring-green-100" 
+                  />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">الرسالة <span className="text-red-500">*</span></label>
-                  <textarea name="message" required rows={4} placeholder="اكتب استفسارك هنا..." className="w-full px-4 py-3 border border-gray-300 rounded-xl text-[16px] outline-none focus:border-green-500"></textarea>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-bold text-gray-700">
+                    الرسالة <span className="text-red-500">*</span>
+                  </label>
+                  <textarea 
+                    name="message" 
+                    required 
+                    rows={4} 
+                    placeholder="اكتب استفسارك هنا..." 
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-[16px] outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                  ></textarea>
                 </div>
 
-                <button type="submit" disabled={loading} className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-70 text-white font-bold py-4 rounded-xl shadow-md text-lg transition-all">
+                <button 
+                  type="submit" 
+                  disabled={loading} 
+                  className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-70 text-white font-bold py-3.5 rounded-xl shadow-md text-base transition-all text-center"
+                >
                   {loading ? "جاري الإرسال..." : "إرسال الرسالة"}
                 </button>
               </form>
