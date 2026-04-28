@@ -101,10 +101,10 @@ export default function Home() {
     <div dir="rtl" className="min-h-screen bg-white font-sans">
 
       {/* ── NAVBAR ── */}
-      <nav className={`sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 transition-shadow ${scrolled ? "shadow-sm" : ""}`}>
-        <div className="max-w-5xl mx-auto px-6 h-13 flex items-center justify-between py-3 border-b border-gray-100">
+      <nav className={`sticky top-0 z-[100] bg-white/95 backdrop-blur-lg border-b border-gray-200 transition-shadow ${scrolled ? "shadow-sm" : ""}`}>
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between border-b border-gray-100">
 
-          <button onClick={() => scrollTo("home")} className="flex items-center gap-2.5">
+          <button onClick={() => scrollTo("home")} className="flex items-center gap-2.5 cursor-pointer">
             <img
               src="/logo.png"
               alt="حاوية"
@@ -117,15 +117,16 @@ export default function Home() {
 
           <button
             onClick={() => scrollTo("home")}
-            className="bg-green-700 hover:bg-green-800 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors">
+            className="bg-green-700 hover:bg-green-800 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer">
             سجّل الآن
           </button>
         </div>
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="flex">
+        
+        <div className="max-w-5xl mx-auto px-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex min-w-max">
             {sections.map(s => (
               <button key={s.id} onClick={() => scrollTo(s.id)}
-                className={`flex-1 py-3 text-sm font-bold text-center border-b-2 transition-all
+                className={`px-4 py-3 text-sm font-bold text-center border-b-2 transition-all cursor-pointer whitespace-nowrap
                   ${active === s.id ? "text-green-700 border-green-700" : "text-gray-500 border-transparent hover:text-green-700 hover:border-green-300"}`}>
                 {s.label}
               </button>
