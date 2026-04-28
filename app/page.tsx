@@ -100,7 +100,6 @@ export default function Home() {
   return (
     <div dir="rtl" className="min-h-screen bg-white font-sans">
 
-      {/* ── NAVBAR ── */}
       <nav className={`sticky top-0 z-[100] bg-white/95 backdrop-blur-lg border-b border-gray-200 transition-shadow ${scrolled ? "shadow-sm" : ""}`}>
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between border-b border-gray-100">
 
@@ -135,7 +134,6 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* ── HERO ── */}
       <section id="home" className="min-h-[88vh] flex items-center bg-gradient-to-br from-white via-white to-green-50 px-6 py-20">
         <div className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
@@ -217,7 +215,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── OFFERS ── */}
       <section id="offers" className="py-20 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-end justify-between mb-10">
@@ -240,7 +237,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SUPPLIERS (LOCKED) ── */}
       <section id="suppliers" className="py-20 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="mb-10">
@@ -272,7 +268,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── IMPORT ── */}
       <section id="europe" className="py-20 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <div className="mb-10">
@@ -324,7 +319,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
       <footer className="bg-gray-900 pt-16 pb-8 border-t border-gray-800">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
