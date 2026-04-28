@@ -1,15 +1,12 @@
 @import "tailwindcss";
-a { text-decoration: none; }
+
 * {
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
+html, body {
+  -webkit-overflow-scrolling: touch;
   cursor: pointer;
 }
 
@@ -17,6 +14,15 @@ button, a, [role="button"], input, select, textarea, label {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
+}
+
+button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+a {
+  text-decoration: none;
 }
 
 nav {
