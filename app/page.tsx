@@ -95,7 +95,6 @@ export default function Home() {
   };
 
   const handleSendClick = async () => {
-    // تحقق يدوي بدل required
     if (!company.trim() || !city.trim() || !name.trim() || !phone.trim()) {
       alert("الرجاء تعبئة جميع الحقول المطلوبة");
       return;
@@ -233,7 +232,7 @@ export default function Home() {
                 <p className="text-center text-xs text-gray-400 mb-5">سجّل الآن لتكون من أوائل المستفيدين فور الإطلاق</p>
 
                 <div className="mb-5">
-                  abel className="block text-xs font-bold text-gray-700 mb-2">
+                  <label className="block text-xs font-bold text-gray-700 mb-2">
                     نوع الحساب <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -249,7 +248,7 @@ export default function Home() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
-                      abel className="text-xs font-bold text-gray-700">
+                      <label className="text-xs font-bold text-gray-700">
                         اسم الشركة / المؤسسة <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -261,7 +260,7 @@ export default function Home() {
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      abel className="text-xs font-bold text-gray-700">
+                      <label className="text-xs font-bold text-gray-700">
                         المدينة <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -274,7 +273,7 @@ export default function Home() {
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    abel className="text-xs font-bold text-gray-700">
+                    <label className="text-xs font-bold text-gray-700">
                       اسم المسؤول <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -286,7 +285,7 @@ export default function Home() {
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    abel className="text-xs font-bold text-gray-700">
+                    <label className="text-xs font-bold text-gray-700">
                       رقم الجوال <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -448,40 +447,40 @@ export default function Home() {
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                ><a href="/" className="hover:text-green-500 transition-colors">الرئيسية</a></li>
-                ><a href="/products" className="hover:text-green-500 transition-colors">منتجات الجملة</a></li>
-                ><a href="/#suppliers" className="hover:text-green-500 transition-colors">شبكة الموردين</a></li>
-                ><a href="/#europe" className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
+                <li><a href="/" className="hover:text-green-500 transition-colors">الرئيسية</a></li>
+                <li><a href="/products" className="hover:text-green-500 transition-colors">منتجات الجملة</a></li>
+                <li><a href="/#suppliers" className="hover:text-green-500 transition-colors">شبكة الموردين</a></li>
+                <li><a href="/#europe" className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-white font-bold mb-4">الشركة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                ><a href="/about" className="hover:text-green-500 transition-colors">من نحن</a></li>
-                ><a href="/contact" className="hover:text-green-500 transition-colors">تواصل معنا</a></li>
-                ><a href="/terms" className="hover:text-green-500 transition-colors">الشروط والأحكام</a></li>
-                ><a href="/privacy" className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
+                <li><a href="/about" className="hover:text-green-500 transition-colors">من نحن</a></li>
+                <li><a href="/contact" className="hover:text-green-500 transition-colors">تواصل معنا</a></li>
+                <li><a href="/terms" className="hover:text-green-500 transition-colors">الشروط والأحكام</a></li>
+                <li><a href="/privacy" className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-white font-bold mb-4">دعم العملاء</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                >
+                <li className="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                   </svg>
                   <span dir="ltr">+966 53 518 9367</span>
                 </li>
-                >
+                <li className="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect width="20" height="16" x="2" y="4" rx="2" />
                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                   </svg>
                   <span>info@haweyah.com</span>
                 </li>
-                >
+                <li className="mt-4">
                   <a href="/contact" className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">
                     نموذج الاستفسارات
                   </a>

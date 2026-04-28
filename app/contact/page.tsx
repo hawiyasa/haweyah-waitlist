@@ -11,7 +11,6 @@ export default function ContactPage() {
   const [success, setSuccess] = useState(false);
 
   const handleSendClick = async () => {
-    // تحقق يدوي بدل required
     if (!name.trim() || !phone.trim() || !message.trim()) {
       alert("الرجاء تعبئة الحقول المطلوبة (الاسم، الجوال، الرسالة)");
       return;
@@ -92,12 +91,12 @@ export default function ContactPage() {
             <div className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
-                  abel className="text-sm font-bold text-gray-700">الاسم الكامل <span className="text-red-500">*</span></label>
+                  <label className="text-sm font-bold text-gray-700">الاسم الكامل <span className="text-red-500">*</span></label>
                   <input value={name} onChange={e => setName(e.target.value)}
                     className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  abel className="text-sm font-bold text-gray-700">رقم الجوال <span className="text-red-500">*</span></label>
+                  <label className="text-sm font-bold text-gray-700">رقم الجوال <span className="text-red-500">*</span></label>
                   <input dir="ltr" type="tel" placeholder="05XXXXXXXX" value={phone} onChange={e => setPhone(e.target.value)}
                     className="px-4 py-2.5 border border-gray-300 rounded-lg text-right focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
                 </div>
@@ -105,12 +104,12 @@ export default function ContactPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
-                  abel className="text-sm font-bold text-gray-700">البريد الإلكتروني</label>
+                  <label className="text-sm font-bold text-gray-700">البريد الإلكتروني</label>
                   <input type="email" dir="ltr" placeholder="name@company.com" value={email} onChange={e => setEmail(e.target.value)}
                     className="px-4 py-2.5 border border-gray-300 rounded-lg text-right focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  abel className="text-sm font-bold text-gray-700">نوع الرسالة</label>
+                  <label className="text-sm font-bold text-gray-700">نوع الرسالة</label>
                   <select value={type} onChange={e => setType(e.target.value)}
                     className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none bg-white">
                     <option>استفسار عام</option>
@@ -122,7 +121,7 @@ export default function ContactPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                abel className="text-sm font-bold text-gray-700">الرسالة <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-gray-700">الرسالة <span className="text-red-500">*</span></label>
                 <textarea rows={4} value={message} onChange={e => setMessage(e.target.value)}
                   placeholder="اكتب استفسارك هنا..."
                   className="px-4 py-2.5 border border-gray-300 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none resize-none"></textarea>
