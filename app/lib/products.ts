@@ -6,7 +6,7 @@ export type Product = {
   unit: string
   image: string
   badge: string
-  description?: string    // ← أضفنا هذا السطر
+  description?: string   
   minOrder?: string
 }
 
