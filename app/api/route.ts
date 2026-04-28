@@ -1,37 +1,53 @@
 import { NextResponse } from "next/server";
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID!;
-
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const text = body?.text;
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
 
-    if (!text) {
-      return NextResponse.json({ ok: false, error: "Missing text" }, { status: 400 });
+    if (!token || !chatId) {
+      return NextResponse.json(
+        { ok: false, error: "Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID" },
+        { status: 500 }
+      );
     }
 
-    const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    const body = await req.json();
+    const text = body?.text?.toString()?.trim();
+
+    if (!text) {
+      return NextResponse.json(
+        { ok: false, error: "Missing text" },
+        { status: 400 }
+      );
+    }
+
+    const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      cache: "no-store",
       body: JSON.stringify({
-        chat_id: CHAT_ID,
+        chat_id: chatId,
         text,
       }),
-      cache: "no-store",
     });
 
     const tgData = await tgRes.json();
 
     if (!tgRes.ok || !tgData?.ok) {
-      return NextResponse.json({ ok: false, error: tgData }, { status: 500 });
+      return NextResponse.json(
+        { ok: false, error: tgData },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    return NextResponse.json({ ok: false, error: "Server error" }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "Server error" },
+      { status: 500 }
+    );
   }
 }

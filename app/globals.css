@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
@@ -9,9 +11,11 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
+  min-height: 100%;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -19,22 +23,49 @@ body {
   min-height: 100vh;
 }
 
-button, a, input, select, textarea, label {
-  -webkit-tap-highlight-color: transparent;
+button,
+a,
+input,
+select,
+textarea,
+label {
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  font-size: 16px;
 }
 
 button {
   -webkit-appearance: none;
   appearance: none;
-  border: 0;
-  background: none;
 }
 
 a {
   text-decoration: none;
 }
 
-.overflow-x-auto {
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.ios-scroll {
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.ios-click {
+  position: relative;
+  z-index: 20;
+  pointer-events: auto;
+}
+
+.ios-overlay {
+  pointer-events: none;
 }
