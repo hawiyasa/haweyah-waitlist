@@ -21,7 +21,7 @@ function FeaturedProducts() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {featured.map(p => (
-        <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:-translate-y-1 hover:shadow-md transition-all">
+        <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:-translate-y-1 hover:shadow-md transition-all touch-manipulation">
           <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
             {p.image
               ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
@@ -70,8 +70,13 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // إصلاح دالة التمرير لتتوافق مع سفاري
   const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    const el = document.getElementById(id);
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 90;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,10 +105,11 @@ export default function Home() {
   return (
     <div dir="rtl" className="min-h-screen bg-white font-sans">
 
-      <nav className={`sticky top-0 z-[100] bg-white/95 backdrop-blur-lg border-b border-gray-200 transition-shadow ${scrolled ? "shadow-sm" : ""}`}>
+      {/* إضافة transform-gpu لحل مشكلة سفاري مع الطبقات واللمس */}
+      <nav className={`sticky top-0 z-[100] transform-gpu bg-white/95 backdrop-blur-lg border-b border-gray-200 transition-shadow ${scrolled ? "shadow-sm" : ""}`}>
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between border-b border-gray-100">
 
-          <button onClick={() => scrollTo("home")} className="flex items-center gap-2.5 cursor-pointer">
+          <button type="button" onClick={() => scrollTo("home")} className="flex items-center gap-2.5 cursor-pointer touch-manipulation">
             <img
               src="/logo.png"
               alt="حاوية"
@@ -115,8 +121,9 @@ export default function Home() {
           </button>
 
           <button
+            type="button"
             onClick={() => scrollTo("home")}
-            className="bg-green-700 hover:bg-green-800 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer">
+            className="bg-green-700 hover:bg-green-800 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer touch-manipulation">
             سجّل الآن
           </button>
         </div>
@@ -124,8 +131,8 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="flex min-w-max">
             {sections.map(s => (
-              <button key={s.id} onClick={() => scrollTo(s.id)}
-                className={`px-4 py-3 text-sm font-bold text-center border-b-2 transition-all cursor-pointer whitespace-nowrap
+              <button key={s.id} type="button" onClick={() => scrollTo(s.id)}
+                className={`px-4 py-3 text-sm font-bold text-center border-b-2 transition-all cursor-pointer touch-manipulation whitespace-nowrap
                   ${active === s.id ? "text-green-700 border-green-700" : "text-gray-500 border-transparent hover:text-green-700 hover:border-green-300"}`}>
                 {s.label}
               </button>
@@ -158,7 +165,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-2xl">
+          <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-2xl relative z-10">
             {success ? (
               <div className="text-center py-8 bg-green-50 rounded-xl">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -174,7 +181,7 @@ export default function Home() {
                 <div className="flex bg-gray-100 p-1 rounded-lg mb-5">
                   {(["buyer","supplier"] as const).map(t => (
                     <button key={t} type="button" onClick={() => setUserType(t)}
-                      className={`flex-1 py-2.5 text-sm font-bold rounded-md transition-all
+                      className={`flex-1 py-2.5 text-sm font-bold rounded-md transition-all cursor-pointer touch-manipulation
                         ${userType === t ? "bg-white text-green-700 shadow-sm border border-gray-200" : "text-gray-500"}`}>
                       {t === "buyer" ? "مشتري / تاجر" : "مورد / مصنع"}
                     </button>
@@ -189,23 +196,23 @@ export default function Home() {
                       <div key={f.id} className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-gray-700">{f.label} <span className="text-red-500">*</span></label>
                         <input required value={f.val} onChange={e => f.set(e.target.value)} placeholder={f.ph}
-                          className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none" />
+                          className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none touch-manipulation" />
                       </div>
                     ))}
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-700">اسم المسؤول <span className="text-red-500">*</span></label>
                     <input required value={name} onChange={e => setName(e.target.value)} placeholder="الاسم الكامل"
-                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none" />
+                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none touch-manipulation" />
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-700">رقم الجوال <span className="text-red-500">*</span></label>
                     <input required dir="ltr" value={phone} onChange={e => setPhone(e.target.value)}
                       placeholder="05XXXXXXXX" type="tel"
-                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-right" />
+                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-right touch-manipulation" />
                   </div>
                   <button type="submit" disabled={loading}
-                    className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-70 text-white font-bold py-3 rounded-lg transition-all shadow-md hover:shadow-lg">
+                    className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-70 text-white font-bold py-3 rounded-lg transition-all shadow-md hover:shadow-lg cursor-pointer touch-manipulation">
                     {loading ? "جاري إرسال الطلب..." : "تأكيد الطلب والانضمام"}
                   </button>
                 </form>
@@ -223,14 +230,14 @@ export default function Home() {
               <h2 className="text-3xl font-extrabold text-gray-900">العروض والمنتجات الحالية</h2>
               <p className="text-gray-500 mt-2">تصفح المنتجات واطلب مباشرة عبر واتساب — بدون تسجيل</p>
             </div>
-            <a href="/products" className="hidden md:flex items-center gap-1 text-green-700 font-bold text-sm hover:underline shrink-0">
+            <a href="/products" className="hidden md:flex items-center gap-1 text-green-700 font-bold text-sm hover:underline shrink-0 touch-manipulation">
               مشاهدة الكل ←
             </a>
           </div>
           <FeaturedProducts />
           <div className="text-center mt-8">
             <a href="/products"
-              className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg">
+              className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg touch-manipulation">
               مشاهدة جميع المنتجات ←
             </a>
           </div>
@@ -335,27 +342,27 @@ export default function Home() {
                 <span className="text-2xl font-extrabold text-white tracking-tight">حاوية</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار التجزئة والمطاعم.
+                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار الجملة والتجزئة والمطاعم.
               </p>
             </div>
 
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/" className="hover:text-green-500 transition-colors">الرئيسية</a></li>
-                <li><a href="/products" className="hover:text-green-500 transition-colors">منتجات الجملة</a></li>
-                <li><a href="/#suppliers" className="hover:text-green-500 transition-colors">شبكة الموردين</a></li>
-                <li><a href="/#europe" className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
+                <li><a href="/" className="hover:text-green-500 transition-colors touch-manipulation">الرئيسية</a></li>
+                <li><a href="/products" className="hover:text-green-500 transition-colors touch-manipulation">منتجات الجملة</a></li>
+                <li><a href="/#suppliers" className="hover:text-green-500 transition-colors touch-manipulation">شبكة الموردين</a></li>
+                <li><a href="/#europe" className="hover:text-green-500 transition-colors touch-manipulation">الاستيراد الدولي</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-white font-bold mb-4">الشركة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/about" className="hover:text-green-500 transition-colors">من نحن</a></li>
-                <li><a href="/contact" className="hover:text-green-500 transition-colors">تواصل معنا</a></li>
-                <li><a href="/terms" className="hover:text-green-500 transition-colors">الشروط والأحكام</a></li>
-                <li><a href="/privacy" className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
+                <li><a href="/about" className="hover:text-green-500 transition-colors touch-manipulation">من نحن</a></li>
+                <li><a href="/contact" className="hover:text-green-500 transition-colors touch-manipulation">تواصل معنا</a></li>
+                <li><a href="/terms" className="hover:text-green-500 transition-colors touch-manipulation">الشروط والأحكام</a></li>
+                <li><a href="/privacy" className="hover:text-green-500 transition-colors touch-manipulation">سياسة الخصوصية</a></li>
               </ul>
             </div>
 
@@ -371,7 +378,7 @@ export default function Home() {
                   <span>info@haweyah.com</span>
                 </li>
                 <li className="mt-4">
-                  <a href="/contact" className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">
+                  <a href="/contact" className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors touch-manipulation">
                     نموذج الاستفسارات
                   </a>
                 </li>
@@ -394,4 +401,3 @@ export default function Home() {
     </div>
   );
 }
-
