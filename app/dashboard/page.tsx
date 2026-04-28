@@ -29,8 +29,14 @@ export default function Dashboard() {
   const openEdit = (p: Product) => {
     setEditing(p)
     setForm({
-      name:p.name, category:p.category, price:p.price, unit:p.unit,
-      image:p.image, badge:p.badge, description:p.description, minOrder:p.minOrder||""
+      name: p.name, 
+      category: p.category, 
+      price: p.price, 
+      unit: p.unit,
+      image: p.image || "", 
+      badge: p.badge || "", 
+      description: p.description || "", 
+      minOrder: p.minOrder || ""
     })
     setShowForm(true)
   }
