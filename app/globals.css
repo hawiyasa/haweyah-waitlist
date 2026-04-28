@@ -2,13 +2,18 @@
 
 * {
   -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
 }
 
-html, body {
-  -webkit-overflow-scrolling: touch;
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
-button, a, [role="button"], input, select, textarea {
+body {
+  cursor: pointer;
+}
+
+button, a, [role="button"], input, select, textarea, label {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
