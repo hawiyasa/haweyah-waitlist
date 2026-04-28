@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getProducts, Product } from "./lib/products";
 
 function FeaturedProducts() {
@@ -12,13 +12,10 @@ function FeaturedProducts() {
   if (featured.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
-        <div className="text-5xl mb-3">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-gray-300">
-            <rect width="18" height="18" x="3" y="3" rx="2" />
-            <path d="M3 9h18" />
-            <path d="M9 21V9" />
-          </svg>
-        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-gray-300 mb-3">
+          <rect width="18" height="18" x="3" y="3" rx="2" />
+          <path d="M3 9h18" /><path d="M9 21V9" />
+        </svg>
         <p className="text-sm">لا توجد منتجات حالياً — ستظهر هنا بعد الإضافة من لوحة التحكم</p>
       </div>
     );
@@ -27,7 +24,7 @@ function FeaturedProducts() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {featured.map((p) => (
-        <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all">
+        <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
           <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
             {p.image ? (
               <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
@@ -42,7 +39,6 @@ function FeaturedProducts() {
               </span>
             )}
           </div>
-
           <div className="p-3">
             <div className="text-xs text-gray-400 mb-1">{p.category}</div>
             <div className="font-bold text-gray-900 text-sm leading-tight mb-1">{p.name}</div>
@@ -64,74 +60,58 @@ export default function Home() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("home");
+  const isSending = useRef(false);
 
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 10);
       const secs = ["home", "offers", "suppliers", "europe"];
       let cur = "home";
-
       secs.forEach((id) => {
         const el = document.getElementById(id);
         if (el && window.scrollY >= el.offsetTop - 130) cur = id;
       });
-
       setActive(cur);
     };
-
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const resetForm = () => {
-    setCompany("");
-    setCity("");
-    setName("");
-    setPhone("");
-    setUserType("buyer");
-  };
+  const handleSubmit = async () => {
+    if (isSending.current) return;
 
-  const submitForm = async () => {
+    setError("");
+
     if (!company.trim() || !city.trim() || !name.trim() || !phone.trim()) {
-      alert("الرجاء تعبئة جميع الحقول المطلوبة");
+      setError("الرجاء تعبئة جميع الحقول المطلوبة");
       return;
     }
-    if (loading) return;
+
+    isSending.current = true;
     setLoading(true);
 
     const typeLabel = userType === "supplier" ? "مورد / مصنع" : "مشتري / تاجر";
-    const msg = `طلب انضمام جديد — منصة حاوية
-
-النوع: ${typeLabel}
-الشركة: ${company}
-المسؤول: ${name}
-الجوال: ${phone}
-المدينة: ${city}`;
+    const msg = `طلب انضمام جديد — منصة حاوية\n\nالنوع: ${typeLabel}\nالشركة: ${company}\nالمسؤول: ${name}\nالجوال: ${phone}\nالمدينة: ${city}`;
 
     try {
       const res = await fetch("/api/telegram", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: msg }),
       });
-
       const data = await res.json();
-
-      if (!res.ok || !data.ok) {
-        throw new Error("Telegram send failed");
-      }
-
-      resetForm();
+      if (!res.ok || !data.ok) throw new Error("failed");
+      setCompany(""); setCity(""); setName(""); setPhone(""); setUserType("buyer");
       setSuccess(true);
     } catch {
-      alert("تعذر إرسال الطلب.");
+      setError("تعذر إرسال الطلب، حاول مرة أخرى.");
     } finally {
       setLoading(false);
+      isSending.current = false;
     }
   };
 
@@ -150,22 +130,17 @@ export default function Home() {
             <img src="/logo.png" alt="حاوية" width={38} height={38} className="object-contain" />
             <span className="text-2xl font-extrabold text-green-800 tracking-tight">حاوية</span>
           </a>
-
           <a href="#join-form" className="bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg">
             سجّل الآن
           </a>
         </div>
-
         <div className="max-w-5xl mx-auto px-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="flex min-w-max">
             {sections.map((s) => (
-              <a
-                key={s.id}
-                href={`#${s.id}`}
+              <a key={s.id} href={`#${s.id}`}
                 className={`px-4 py-3 text-sm font-bold text-center border-b-2 transition-all whitespace-nowrap ${
                   active === s.id ? "text-green-700 border-green-700" : "text-gray-500 border-transparent"
-                }`}
-              >
+                }`}>
                 {s.label}
               </a>
             ))}
@@ -179,25 +154,16 @@ export default function Home() {
             <span className="inline-flex items-center gap-2 bg-green-100 text-green-800 border border-green-200 text-xs font-bold px-4 py-1.5 rounded-full mb-6">
               قريباً في المملكة العربية السعودية
             </span>
-
             <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-5">
-              سوق الجملة الافتراضي
-              <br />
+              سوق الجملة الافتراضي<br />
               الأكبر لقطاع <span className="text-green-700">الأغذية</span>
             </h1>
-
             <p className="text-gray-500 text-lg leading-relaxed mb-8">
-              نربط المصانع والموردين مباشرة مع تجار الجملة والتجزئة والمطاعم.
-              <br />
+              نربط المصانع والموردين مباشرة مع تجار الجملة والتجزئة والمطاعم.<br />
               أسعار المصنع، عروض تصفية، وتوريد يومي في مكان واحد.
             </p>
-
             <div className="flex gap-8">
-              {[
-                { n: "+500", l: "منتج جملة" },
-                { n: "+120", l: "مورد ومصنع" },
-                { n: "12", l: "مدينة سعودية" },
-              ].map((s) => (
+              {[{ n: "+500", l: "منتج جملة" }, { n: "+120", l: "مورد ومصنع" }, { n: "12", l: "مدينة سعودية" }].map((s) => (
                 <div key={s.l}>
                   <div className="text-2xl font-extrabold text-green-700">{s.n}</div>
                   <div className="text-xs text-gray-400 mt-1">{s.l}</div>
@@ -215,10 +181,12 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-bold text-green-800 mb-2">تم استلام طلبك بنجاح!</h3>
-                <p className="text-sm text-gray-500 mb-4">سيتواصل معك فريق المبيعات قريباً لإكمال إجراءات التفعيل.</p>
+                <p className="text-sm text-gray-500 mb-4">سيتواصل معك فريق المبيعات قريباً.</p>
                 <button
                   type="button"
+                  onTouchEnd={(e) => { e.preventDefault(); setSuccess(false); }}
                   onClick={() => setSuccess(false)}
+                  style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" } as React.CSSProperties}
                   className="bg-green-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg"
                 >
                   إرسال طلب جديد
@@ -236,7 +204,7 @@ export default function Home() {
                   <select
                     value={userType}
                     onChange={(e) => setUserType(e.target.value as "buyer" | "supplier")}
-                    className="w-full px-3 py-3 border border-gray-300 rounded-lg text-[16px] bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+                    className="w-full px-3 py-3 border border-gray-300 rounded-lg text-[16px] bg-white focus:border-green-500 outline-none"
                   >
                     <option value="buyer">مشتري / تاجر</option>
                     <option value="supplier">مورد / مصنع</option>
@@ -246,61 +214,65 @@ export default function Home() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-700">
-                        اسم الشركة / المؤسسة <span className="text-red-500">*</span>
-                      </label>
+                      <label className="text-xs font-bold text-gray-700">اسم الشركة / المؤسسة <span className="text-red-500">*</span></label>
                       <input
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
                         placeholder="مثال: مؤسسة النور..."
-                        className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+                        className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 outline-none"
                       />
                     </div>
-
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-700">
-                        المدينة <span className="text-red-500">*</span>
-                      </label>
+                      <label className="text-xs font-bold text-gray-700">المدينة <span className="text-red-500">*</span></label>
                       <input
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         placeholder="جدة، الرياض..."
-                        className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+                        className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-700">
-                      اسم المسؤول <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-xs font-bold text-gray-700">اسم المسؤول <span className="text-red-500">*</span></label>
                     <input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="الاسم الكامل"
-                      className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+                      className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 outline-none"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-700">
-                      رقم الجوال <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-xs font-bold text-gray-700">رقم الجوال <span className="text-red-500">*</span></label>
                     <input
                       dir="ltr"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="05XXXXXXXX"
                       type="tel"
-                      className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-right"
+                      className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 outline-none text-right"
                     />
                   </div>
 
+                  {error && (
+                    <p className="text-red-500 text-xs text-center font-bold">{error}</p>
+                  )}
+
+                  {/* ✅ الحل النهائي: onTouchEnd + onClick + touchAction */}
                   <button
                     type="button"
-                    onClick={submitForm}
-                    disabled={loading}
-                    className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-70 text-white font-bold py-3 rounded-lg transition-all shadow-md cursor-pointer text-center"
+                    onTouchEnd={(e) => { e.preventDefault(); handleSubmit(); }}
+                    onClick={handleSubmit}
+                    style={{
+                      touchAction: "manipulation",
+                      WebkitTapHighlightColor: "transparent",
+                      WebkitUserSelect: "none",
+                      userSelect: "none",
+                    } as React.CSSProperties}
+                    className={`w-full text-white font-bold py-4 rounded-lg shadow-md text-center text-base ${
+                      loading ? "bg-green-500" : "bg-green-700"
+                    }`}
                   >
                     {loading ? "جاري إرسال الطلب..." : "تأكيد الطلب والانضمام"}
                   </button>
@@ -323,9 +295,7 @@ export default function Home() {
               مشاهدة الكل ←
             </a>
           </div>
-
           <FeaturedProducts />
-
           <div className="text-center mt-8">
             <a href="/products" className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-md">
               مشاهدة جميع المنتجات ←
@@ -341,32 +311,20 @@ export default function Home() {
             <h2 className="text-3xl font-extrabold text-gray-900">الموردين والتوريد اليومي</h2>
             <p className="text-gray-500 mt-2">اطلب من الموردين المعتمدين مباشرة بكميات الجملة وجداول توريد يومية.</p>
           </div>
-
           <div className="relative rounded-2xl overflow-hidden">
             <div className="blur-md opacity-40 pointer-events-none grid grid-cols-3 gap-4 p-2">
               {["مصانع", "زراعي", "لحوم"].map((e, i) => (
                 <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                  <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-sm font-bold mb-3 text-gray-500">
-                    {e.substring(0, 1)}
-                  </div>
+                  <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-sm font-bold mb-3 text-gray-500">{e.substring(0, 1)}</div>
                   <div className="h-3 bg-gray-300 rounded w-4/5 mb-2"></div>
                   <div className="h-2.5 bg-gray-200 rounded w-3/5"></div>
                 </div>
               ))}
             </div>
-
-            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20 overflow-y-auto">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </div>
-              <h3 className="text-lg md:text-xl font-extrabold text-gray-900 mb-2">هذا القسم قيد التجهيز</h3>
-              <p className="text-gray-600 font-medium max-w-sm mx-auto text-sm leading-relaxed px-2">
-                نعمل على بناء شبكة موردين معتمدين للتوريد اليومي بأسعار المصنع لتجار التجزئة.
-              </p>
-              <span className="mt-4 bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full shrink-0">قريباً</span>
+            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20">
+              <h3 className="text-lg font-extrabold text-gray-900 mb-2">هذا القسم قيد التجهيز</h3>
+              <p className="text-gray-600 text-sm max-w-sm">نعمل على بناء شبكة موردين معتمدين للتوريد اليومي بأسعار المصنع.</p>
+              <span className="mt-4 bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full">قريباً</span>
             </div>
           </div>
         </div>
@@ -379,51 +337,38 @@ export default function Home() {
             <h2 className="text-3xl font-extrabold text-gray-900 mb-2">استورد بأسعار المصنع مباشرة</h2>
             <p className="text-gray-500">نربطك بكبار المصانع والموردين في أوروبا والشرق الأوسط. لا وسطاء، تسعير مباشر، وشحن منظم حتى باب مستودعك.</p>
           </div>
-
           <div className="relative rounded-2xl overflow-hidden">
-            <div className="blur-sm pointer-events-none select-none">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-                <div className="space-y-4">
-                  {[
-                    { title: "تواصل مباشر مع المصنع", desc: "بدون وسطاء، تتفاوض مباشرة وتحصل على أفضل سعر" },
-                    { title: "شحن من الباب للباب", desc: "بحري أو جوي + جمارك + تسليم لمستودعك" },
-                    { title: "منتجات معتمدة حلال", desc: "شهادات الحلال المعتمدة للسوق السعودي" },
-                    { title: "أسعار تنافسية مضمونة", desc: "حجم الكونتينرات يتيح أسعاراً لا تجدها محلياً" },
-                  ].map((f) => (
-                    <div key={f.title} className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
-                        <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-900">{f.title}</h4>
-                        <p className="text-xs text-gray-500 mt-0.5">{f.desc}</p>
-                      </div>
+            <div className="blur-sm pointer-events-none select-none grid grid-cols-1 md:grid-cols-2 gap-12 items-start p-4">
+              <div className="space-y-4">
+                {[
+                  { title: "تواصل مباشر مع المصنع", desc: "بدون وسطاء، تتفاوض مباشرة وتحصل على أفضل سعر" },
+                  { title: "شحن من الباب للباب", desc: "بحري أو جوي + جمارك + تسليم لمستودعك" },
+                  { title: "منتجات معتمدة حلال", desc: "شهادات الحلال المعتمدة للسوق السعودي" },
+                  { title: "أسعار تنافسية مضمونة", desc: "حجم الكونتينرات يتيح أسعاراً لا تجدها محلياً" },
+                ].map((f) => (
+                  <div key={f.title} className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+                      <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                     </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-4 gap-3">
-                  {["ألمانيا", "فرنسا", "هولندا", "إسبانيا", "بولندا", "إيطاليا", "تركيا", "مصر"].map((c) => (
-                    <div key={c} className="bg-white border border-gray-200 rounded-xl p-3 text-center shadow-sm">
-                      <div className="text-xs font-bold text-gray-800">{c}</div>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900">{f.title}</h4>
+                      <p className="text-xs text-gray-500 mt-0.5">{f.desc}</p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-4 gap-3">
+                {["ألمانيا", "فرنسا", "هولندا", "إسبانيا", "بولندا", "إيطاليا", "تركيا", "مصر"].map((c) => (
+                  <div key={c} className="bg-white border border-gray-200 rounded-xl p-3 text-center shadow-sm">
+                    <div className="text-xs font-bold text-gray-800">{c}</div>
+                  </div>
+                ))}
               </div>
             </div>
-
-            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20 overflow-y-auto">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </div>
-              <h3 className="text-lg md:text-xl font-extrabold text-gray-900 mb-2">هذا القسم قيد التجهيز</h3>
-              <p className="text-gray-600 font-medium max-w-sm mx-auto text-sm leading-relaxed px-2">
-                نعمل على بناء شبكة استيراد مباشرة من المصانع الأوروبية لضمان أفضل سعر وشهادات حلال معتمدة.
-              </p>
-              <span className="mt-4 bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full shrink-0">قريباً</span>
+            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20">
+              <h3 className="text-lg font-extrabold text-gray-900 mb-2">هذا القسم قيد التجهيز</h3>
+              <p className="text-gray-600 text-sm max-w-sm">نعمل على بناء شبكة استيراد مباشرة من المصانع الأوروبية.</p>
+              <span className="mt-4 bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full">قريباً</span>
             </div>
           </div>
         </div>
@@ -437,11 +382,8 @@ export default function Home() {
                 <img src="/logo.png" alt="حاوية" width={34} height={34} className="object-contain brightness-0 invert" />
                 <span className="text-2xl font-extrabold text-white tracking-tight">حاوية</span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار الجملة والتجزئة والمطاعم.
-              </p>
+              <p className="text-gray-400 text-sm leading-relaxed">سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية.</p>
             </div>
-
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
@@ -451,7 +393,6 @@ export default function Home() {
                 <li><a href="/#europe" className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
               </ul>
             </div>
-
             <div>
               <h4 className="text-white font-bold mb-4">الشركة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
@@ -461,7 +402,6 @@ export default function Home() {
                 <li><a href="/privacy" className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
               </ul>
             </div>
-
             <div>
               <h4 className="text-white font-bold mb-4">دعم العملاء</h4>
               <ul className="space-y-3 text-sm text-gray-400">
@@ -486,14 +426,9 @@ export default function Home() {
               </ul>
             </div>
           </div>
-
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-xs">
-              جميع الحقوق محفوظة © 2026 <strong className="text-gray-300 font-normal">منصة حاوية لتقنية المعلومات</strong>
-            </p>
-            <div className="flex gap-4 text-gray-500">
-              <span className="text-xs">المملكة العربية السعودية - جدة</span>
-            </div>
+            <p className="text-gray-500 text-xs">جميع الحقوق محفوظة © 2026 <strong className="text-gray-300 font-normal">منصة حاوية لتقنية المعلومات</strong></p>
+            <span className="text-xs text-gray-500">المملكة العربية السعودية - جدة</span>
           </div>
         </div>
       </footer>
