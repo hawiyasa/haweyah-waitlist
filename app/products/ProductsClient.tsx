@@ -40,11 +40,19 @@ export default function ProductsClient({ products }: { products: Product[] }) {
     return `https://wa.me/${WHATSAPP}?text=${msg}`;
   }
 
-  // ✅ Style ثابت لحل مشكلة الأيفون
+  // ✅ الحل الشامل لـ iOS Safari
   const iosBtnStyle: React.CSSProperties = {
     WebkitTapHighlightColor: "transparent",
     touchAction: "manipulation",
+    cursor: "pointer",
+    WebkitUserSelect: "none",
+    userSelect: "none",
   };
+
+  // ✅ دالة الضغط مع دعم onTouchEnd للأيفون
+  function handleCatSelect(cat: string) {
+    setSelectedCat(cat);
+  }
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans flex flex-col">
@@ -66,7 +74,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full max-w-xl border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-gray-50"
-            style={{ fontSize: "16px" }} // ✅ يمنع iOS من التكبير التلقائي
+            style={{ fontSize: "16px" }}
           />
         </div>
       </div>
@@ -82,7 +90,8 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 key={cat}
                 type="button"
                 style={iosBtnStyle}
-                onClick={() => setSelectedCat(cat)}
+                onTouchEnd={(e) => { e.preventDefault(); handleCatSelect(cat); }}
+                onClick={() => handleCatSelect(cat)}
                 className={`w-full text-right px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   selectedCat === cat
                     ? "bg-green-700 text-white"
@@ -97,15 +106,19 @@ export default function ProductsClient({ products }: { products: Product[] }) {
 
         <main className="flex-1">
 
-          {/* Mobile Categories */}
-          <div className="flex md:hidden gap-2 mb-6 overflow-x-auto pb-2">
+          {/* ✅ Mobile Categories — الحل: نقل onTouchEnd للزر نفسه */}
+          <div
+            className="flex md:hidden gap-2 mb-6 pb-2"
+            style={{ overflowX: "auto", WebkitOverflowScrolling: "auto" }}
+          >
             {categories.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 style={iosBtnStyle}
-                onClick={() => setSelectedCat(cat)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                onTouchEnd={(e) => { e.preventDefault(); handleCatSelect(cat); }}
+                onClick={() => handleCatSelect(cat)}
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors min-h-[44px] ${
                   selectedCat === cat
                     ? "bg-green-700 text-white border-green-700"
                     : "bg-white text-gray-600 border-gray-300"
