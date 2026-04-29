@@ -94,6 +94,9 @@ export default function Dashboard() {
 
   const saveForm = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // تجهيز البيانات
+    const tempId = editing ? editing.id : `temp-${Date.now()}`
     const payload = {
       name:        form.name,
       category:    form.category,
@@ -105,25 +108,38 @@ export default function Dashboard() {
       min_order:   form.min_order   || null,
       in_stock:    form.in_stock ?? true,
     }
+
+    // ⚡️ 1. التحديث الفوري في الواجهة (Optimistic UI)
+    const optimisticProduct = { id: tempId, ...payload }
     if (editing) {
-      const { error } = await supabase
-        .from("products").update(payload).eq("id", editing.id)
-      if (!error)
-        setProducts(prev => prev.map(p =>
-          p.id === editing.id ? { ...p, ...payload } : p
-        ))
+      setProducts(prev => prev.map(p => p.id === editing.id ? { ...p, ...payload } : p))
     } else {
-      const { data, error } = await supabase
-        .from("products").insert([payload]).select().single()
-      if (!error && data) setProducts(prev => [data, ...prev])
+      setProducts(prev => [optimisticProduct as Product, ...prev])
     }
+    
+    // إغلاق النافذة فوراً ليعطي إحساس بالسرعة الخارقة
     setShowForm(false)
+
+    // ☁️ 2. الحفظ في الخلفية (في سيرفر Supabase)
+    if (editing) {
+      await supabase.from("products").update(payload).eq("id", editing.id)
+    } else {
+      const { data, error } = await supabase.from("products").insert([payload]).select().single()
+      if (!error && data) {
+        // استبدال المعرف المؤقت بالمعرف الحقيقي بعد نجاح الحفظ بصمت
+        setProducts(prev => prev.map(p => p.id === tempId ? data : p))
+      }
+    }
   }
 
   const del = async (id: string) => {
     if (!confirm("حذف المنتج؟")) return
-    const { error } = await supabase.from("products").delete().eq("id", id)
-    if (!error) setProducts(prev => prev.filter(p => p.id !== id))
+    
+    // ⚡️ 1. الحذف الفوري من الشاشة
+    setProducts(prev => prev.filter(p => p.id !== id))
+    
+    // ☁️ 2. الحذف من السيرفر في الخلفية
+    await supabase.from("products").delete().eq("id", id)
   }
 
   /* ───── Login Screen ───── */
