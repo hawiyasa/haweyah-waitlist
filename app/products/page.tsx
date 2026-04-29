@@ -1,251 +1,108 @@
-"use client";
+import { notFound } from "next/navigation";
+import { supabase } from "../../lib/supabase";
 
-import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
-
-interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  unit: string;
-  category?: string;
-  image_url?: string;
-  in_stock?: boolean;
-  min_order?: number;
-  sku?: string;
+interface Props {
+  params: Promise<{ id: string }>;
 }
 
-export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCat, setSelectedCat] = useState("الكل");
-  const [search, setSearch] = useState("");
+async function getProduct(id: string) {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error || !data) return null;
+  return data;
+}
 
-  useEffect(() => {
-    async function fetchProducts() {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (!error && data) setProducts(data);
-      setLoading(false);
-    }
-    fetchProducts();
-  }, []);
+export default async function ProductPage({ params }: Props) {
+  const { id } = await params;
+  const product = await getProduct(id);
 
-  // استخراج الفئات من المنتجات
-  const categories = [
-    "الكل",
-    ...Array.from(new Set(products.map((p) => p.category || "عام").filter(Boolean))),
-  ];
-
-  // فلترة المنتجات
-  const filtered = products.filter((p) => {
-    const matchCat = selectedCat === "الكل" || p.category === selectedCat;
-    const matchSearch =
-      search === "" ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      (p.description || "").toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
+  if (!product) notFound();
 
   const WHATSAPP = "966535189367";
-
-  function buildWaUrl(product: Product) {
-    const msg = encodeURIComponent(
-      `مرحباً، أريد طلب هذا المنتج من منصة حاوية:\n📦 ${product.name}\n💰 السعر: ${product.price} ﷼ / ${product.unit}\nالكمية المطلوبة: `
-    );
-    return `https://wa.me/${WHATSAPP}?text=${msg}`;
-  }
+  const waMsg = encodeURIComponent(
+    `مرحباً، أريد طلب هذا المنتج من منصة حاوية:\n📦 ${product.name}\n💰 السعر: ${product.price} ﷼ / ${product.unit}\nالكمية المطلوبة: `
+  );
+  const waUrl = `https://wa.me/${WHATSAPP}?text=${waMsg}`;
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans flex flex-col">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="text-2xl font-extrabold text-green-800 tracking-tight">
-            حاوية
+        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+          <a href="/" className="text-2xl font-extrabold text-green-800">حاوية</a>
+          <a href="/products" className="text-sm text-gray-500 hover:text-green-700 font-bold transition-colors">
+            ← العودة للمنتجات
           </a>
-          <span className="text-sm text-gray-500 font-medium hidden sm:block">
-            سوق الجملة للمواد الغذائية ومستلزمات التنظيف
-          </span>
         </div>
       </header>
 
-      {/* Search Bar */}
-      <div className="bg-white border-b border-gray-100 py-4">
-        <div className="max-w-7xl mx-auto px-6">
-          <input
-            type="text"
-            placeholder="🔍  ابحث عن منتج..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-xl border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-gray-50"
-          />
-        </div>
-      </div>
+      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-12">
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm grid grid-cols-1 md:grid-cols-2">
+          {/* صورة */}
+          <div className="h-64 md:h-full min-h-[300px] bg-gray-50 flex items-center justify-center relative">
+            {product.image_url ? (
+              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="text-gray-300 text-6xl">📦</div>
+            )}
+            {product.in_stock === false && (
+              <span className="absolute top-4 right-4 bg-red-600 text-white text-sm font-bold px-3 py-1 rounded-full">نفدت الكمية</span>
+            )}
+          </div>
 
-      <div className="flex flex-1 max-w-7xl mx-auto w-full px-6 py-8 gap-8">
-        {/* Sidebar - Categories */}
-        <aside className="hidden md:block w-52 flex-shrink-0">
-          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-            الفئات
-          </h2>
-          <div className="flex flex-col gap-1">
-            {categories.map((cat) => (
-              <div key={cat}>
-                <label
-                  onClick={() => setSelectedCat(cat)}
-                  className={`block w-full text-right px-4 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-colors ${
-                    selectedCat === cat
-                      ? "bg-green-700 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {cat}
-                </label>
+          {/* تفاصيل */}
+          <div className="p-8 flex flex-col justify-center">
+            {product.category && (
+              <div className="text-sm text-green-700 font-bold mb-2">{product.category}</div>
+            )}
+            <h1 className="text-3xl font-extrabold text-gray-900 mb-4 leading-tight">{product.name}</h1>
+            <div className="text-4xl font-extrabold text-green-700 mb-6">
+              {product.price} <span className="text-xl text-gray-500 font-normal">﷼ / {product.unit}</span>
+            </div>
+
+            <div className="space-y-3 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <div className="flex justify-between border-b border-gray-200 pb-2">
+                <span className="text-gray-500 text-sm">الحد الأدنى للطلب</span>
+                <span className="font-bold text-gray-900 text-sm">{product.min_order || "غير محدد"}</span>
               </div>
-            ))}
-          </div>
-        </aside>
-
-        {/* Mobile Category Pills */}
-        <div className="md:hidden absolute" style={{ display: "none" }} />
-
-        {/* Products Grid */}
-        <main className="flex-1">
-          {/* Mobile Categories */}
-          <div className="flex md:hidden gap-2 mb-6 overflow-x-auto pb-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCat(cat)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                  selectedCat === cat
-                    ? "bg-green-700 text-white border-green-700"
-                    : "bg-white text-gray-600 border-gray-300"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Count */}
-          <div className="mb-4 text-sm text-gray-400">
-            {loading ? "جاري التحميل..." : `${filtered.length} منتج`}
-          </div>
-
-          {/* Loading State */}
-          {loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl overflow-hidden border border-gray-100 animate-pulse">
-                  <div className="h-48 bg-gray-200" />
-                  <div className="p-5 space-y-3">
-                    <div className="h-4 bg-gray-200 rounded w-3/4" />
-                    <div className="h-3 bg-gray-100 rounded w-full" />
-                    <div className="h-6 bg-gray-200 rounded w-1/3" />
-                  </div>
-                </div>
-              ))}
+              <div className="flex justify-between pt-1">
+                <span className="text-gray-500 text-sm">حالة التوفر</span>
+                <span className={`font-bold text-sm ${product.in_stock !== false ? "text-green-600" : "text-red-600"}`}>
+                  {product.in_stock !== false ? "متوفر للتوريد" : "غير متوفر مؤقتاً"}
+                </span>
+              </div>
             </div>
-          )}
 
-          {/* Empty State */}
-          {!loading && filtered.length === 0 && (
-            <div className="text-center py-24 text-gray-400">
-              <div className="text-5xl mb-4">📦</div>
-              <p className="font-bold text-gray-500 text-lg mb-1">لا توجد منتجات</p>
-              <p className="text-sm">جرّب تغيير الفئة أو كلمة البحث</p>
-            </div>
-          )}
+            {product.description && (
+              <div className="mb-8">
+                <h3 className="font-bold text-gray-900 mb-2">وصف المنتج</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
+              </div>
+            )}
 
-          {/* Products Grid */}
-          {!loading && filtered.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map((product) => (
-                <a
-                  key={product.id}
-                  href={`/products/${product.id}`}
-                  className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col group"
-                >
-                  {/* Product Image */}
-                  <div className="h-48 bg-gray-50 flex items-center justify-center relative overflow-hidden">
-                    {product.image_url ? (
-                      <img
-                        src={product.image_url}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <span className="text-5xl text-gray-200">📦</span>
-                    )}
-                    {product.in_stock === false && (
-                      <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        نفد
-                      </span>
-                    )}
-                    {product.category && (
-                      <span className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
-                        {product.category}
-                      </span>
-                    )}
-                  </div>
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`block w-full text-white font-bold py-4 rounded-xl shadow-md text-center transition-all text-lg ${
+                product.in_stock === false
+                  ? "bg-gray-400 cursor-not-allowed pointer-events-none"
+                  : "bg-green-700 hover:bg-green-800"
+              }`}
+            >
+              {product.in_stock === false ? "المنتج غير متوفر" : "💬 الطلب عبر الواتساب"}
+            </a>
+            <p className="text-center text-xs text-gray-400 mt-3">
+              يتم تأكيد الأسعار والكميات النهائية عبر الواتساب
+            </p>
+          </div>
+        </div>
+      </main>
 
-                  {/* Product Info */}
-                  <div className="p-5 flex flex-col flex-1">
-                    <h3 className="font-bold text-gray-900 text-base leading-tight mb-1 line-clamp-2">
-                      {product.name}
-                    </h3>
-                    {product.description && (
-                      <p className="text-xs text-gray-400 line-clamp-2 mb-3">
-                        {product.description}
-                      </p>
-                    )}
-
-                    <div className="mt-auto">
-                      <div className="flex items-baseline gap-1 mb-1">
-                        <span className="text-2xl font-extrabold text-green-700">
-                          {product.price}
-                        </span>
-                        <span className="text-sm text-gray-400">
-                          ﷼ / {product.unit}
-                        </span>
-                      </div>
-                      {product.min_order && (
-                        <p className="text-xs text-gray-400 mb-3">
-                          الحد الأدنى: {product.min_order} {product.unit}
-                        </p>
-                      )}
-
-                      <a
-                        href={buildWaUrl(product)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className={`block w-full text-center text-white text-sm font-bold py-2.5 rounded-xl transition-colors ${
-                          product.in_stock === false
-                            ? "bg-gray-300 cursor-not-allowed pointer-events-none"
-                            : "bg-green-700 hover:bg-green-800"
-                        }`}
-                      >
-                        {product.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
-                      </a>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
-        </main>
-      </div>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 py-8 border-t border-gray-800 mt-auto">
-        <div className="max-w-7xl mx-auto px-6 text-center text-gray-500 text-sm">
+      <footer className="bg-gray-900 py-8 mt-auto">
+        <div className="max-w-4xl mx-auto px-6 text-center text-gray-500 text-sm">
           جميع الحقوق محفوظة © 2026 منصة حاوية
         </div>
       </footer>
