@@ -75,7 +75,7 @@ export default async function ProductPage({ params }: Props) {
               <div className="flex justify-between pt-1">
                 <span className="text-gray-500 text-sm">حالة التوفر</span>
                 <span className={`font-bold text-sm ${product.in_stock !== false ? "text-green-600" : "text-red-600"}`}>
-                  {product.in_stock !== false ? "متوفر للتوريد" : "غير متوفر مؤقتاً"}
+                  {product.in_stock !== false ? "متوفر" : "غير متوفر"}
                 </span>
               </div>
             </div>
@@ -98,7 +98,7 @@ export default async function ProductPage({ params }: Props) {
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-extrabold text-gray-900">منتجات من نفس القسم</h2>
+              <h2 className="text-2xl font-extrabold text-gray-900"> منتجات اخرى </h2>
               <a href="/products" className="text-sm font-bold text-green-700 hover:underline">عرض الكل ←</a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

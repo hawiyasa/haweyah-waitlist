@@ -47,8 +47,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <a href="/" className="text-2xl font-extrabold text-green-800 tracking-tight">حاوية</a>
           <span className="text-sm text-gray-500 font-medium hidden sm:block">
-            سوق الجملة للمواد الغذائية ومستلزمات التنظيف
-          </span>
+            المنتجات والعروض          </span>
         </div>
       </header>
 
