@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../lib/supabase";
 
 interface Props {
   params: Promise<{ id: string }>;
