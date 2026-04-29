@@ -18,7 +18,6 @@ interface Product {
 export default function ProductsClient({ products }: { products: Product[] }) {
   const [selectedCat, setSelectedCat] = useState("الكل");
   const [search, setSearch] = useState("");
-  const [showCats, setShowCats] = useState(false);
 
   const categories = [
     "الكل",
@@ -41,32 +40,20 @@ export default function ProductsClient({ products }: { products: Product[] }) {
     return `https://wa.me/${WHATSAPP}?text=${msg}`;
   }
 
-  const iosBtnStyle: React.CSSProperties = {
-    WebkitTapHighlightColor: "transparent",
-    touchAction: "manipulation",
-    cursor: "pointer",
-    WebkitUserSelect: "none",
-    userSelect: "none",
-  };
-
-  function handleCatSelect(cat: string) {
-    setSelectedCat(cat);
-  }
-
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans flex flex-col">
 
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" style={iosBtnStyle} className="text-2xl font-extrabold text-green-800 tracking-tight">حاوية</a>
+          <a href="/" className="text-2xl font-extrabold text-green-800 tracking-tight">حاوية</a>
           <span className="text-sm text-gray-500 font-medium hidden sm:block">المنتجات والعروض</span>
         </div>
       </header>
 
       {/* Search */}
       <div className="bg-white border-b border-gray-100 py-4">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row gap-3">
           <input
             type="text"
             placeholder="🔍  ابحث عن منتج..."
@@ -75,6 +62,25 @@ export default function ProductsClient({ products }: { products: Product[] }) {
             className="w-full max-w-xl border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-gray-50"
             style={{ fontSize: "16px" }}
           />
+
+          {/* ✅ الحل النهائي للأيفون: select نيتف مضمون 100% */}
+          <div className="md:hidden relative">
+            <select
+              value={selectedCat}
+              onChange={(e) => setSelectedCat(e.target.value)}
+              className="w-full appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2.5 pr-10 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600"
+              style={{ fontSize: "16px" }}
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -88,8 +94,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
               <button
                 key={cat}
                 type="button"
-                style={iosBtnStyle}
-                onClick={() => handleCatSelect(cat)}
+                onClick={() => setSelectedCat(cat)}
                 className={`w-full text-right px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   selectedCat === cat
                     ? "bg-green-700 text-white"
@@ -103,60 +108,6 @@ export default function ProductsClient({ products }: { products: Product[] }) {
         </aside>
 
         <main className="flex-1">
-
-          {/* ✅ Mobile Categories — Dropdown بدل الأفقي */}
-          <div className="md:hidden mb-6">
-            <button
-              type="button"
-              style={iosBtnStyle}
-              onTouchEnd={(e) => { e.preventDefault(); setShowCats(!showCats); }}
-              onClick={() => setShowCats(!showCats)}
-              className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 shadow-sm"
-            >
-              <span>📂 الفئة: <span className="text-green-700">{selectedCat}</span></span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18" height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`transition-transform duration-200 ${showCats ? "rotate-180" : ""}`}
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-
-            {showCats && (
-              <div className="mt-2 bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    style={iosBtnStyle}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      handleCatSelect(cat);
-                      setShowCats(false);
-                    }}
-                    onClick={() => {
-                      handleCatSelect(cat);
-                      setShowCats(false);
-                    }}
-                    className={`w-full text-right px-4 py-3.5 text-sm font-medium border-b border-gray-100 last:border-0 transition-colors ${
-                      selectedCat === cat
-                        ? "bg-green-50 text-green-700 font-bold"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {selectedCat === cat ? "✓ " : ""}{cat}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* Empty State */}
           {filtered.length === 0 && (
@@ -176,7 +127,6 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                   <a
                     key={product.id}
                     href={`/products/${product.id}`}
-                    style={iosBtnStyle}
                     className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col group"
                   >
                     <div className="h-48 bg-gray-50 flex items-center justify-center relative overflow-hidden">
@@ -216,7 +166,6 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                           href={buildWaUrl(product)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={iosBtnStyle}
                           onClick={(e) => e.stopPropagation()}
                           className={`block w-full text-center text-white text-sm font-bold py-2.5 rounded-xl transition-colors ${
                             product.in_stock === false
@@ -252,19 +201,19 @@ export default function ProductsClient({ products }: { products: Product[] }) {
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/" style={iosBtnStyle} className="hover:text-green-500 transition-colors">الرئيسية</a></li>
-                <li><a href="/products" style={iosBtnStyle} className="hover:text-green-500 transition-colors">منتجات الجملة</a></li>
-                <li><a href="/#suppliers" style={iosBtnStyle} className="hover:text-green-500 transition-colors">شبكة الموردين</a></li>
-                <li><a href="/#europe" style={iosBtnStyle} className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
+                <li><a href="/" className="hover:text-green-500 transition-colors">الرئيسية</a></li>
+                <li><a href="/products" className="hover:text-green-500 transition-colors">منتجات الجملة</a></li>
+                <li><a href="/#suppliers" className="hover:text-green-500 transition-colors">شبكة الموردين</a></li>
+                <li><a href="/#europe" className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-bold mb-4">الشركة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/about" style={iosBtnStyle} className="hover:text-green-500 transition-colors">من نحن</a></li>
-                <li><a href="/contact" style={iosBtnStyle} className="hover:text-green-500 transition-colors">تواصل معنا</a></li>
-                <li><a href="/terms" style={iosBtnStyle} className="hover:text-green-500 transition-colors">الشروط والأحكام</a></li>
-                <li><a href="/privacy" style={iosBtnStyle} className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
+                <li><a href="/about" className="hover:text-green-500 transition-colors">من نحن</a></li>
+                <li><a href="/contact" className="hover:text-green-500 transition-colors">تواصل معنا</a></li>
+                <li><a href="/terms" className="hover:text-green-500 transition-colors">الشروط والأحكام</a></li>
+                <li><a href="/privacy" className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
               </ul>
             </div>
             <div>
@@ -284,7 +233,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                   <span>info@hawiyasa.com</span>
                 </li>
                 <li className="mt-4">
-                  <a href="/contact" style={iosBtnStyle} className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">
+                  <a href="/contact" className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">
                     نموذج الاستفسارات
                   </a>
                 </li>
