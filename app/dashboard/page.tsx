@@ -1,23 +1,53 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
-import { getProducts, saveProducts, CATEGORIES, Product } from "../lib/products"
+import { supabase } from "../lib/supabase"
 
-const PASS  = "haweyah2026"
+const PASS = "haweyah2026"
+const CATEGORIES = [
+  "مواد غذائية", "شوكلاتات وسناكات",  "مشروبات", "منظفات وعناية شخصية",
+  "زيوت وسمون", "بقوليات وحبوب", "أخرى"
+]
+
+interface Product {
+  id: string
+  name: string
+  category: string
+  price: string | number
+  unit: string
+  image_url?: string
+  badge?: string
+  description?: string
+  min_order?: string
+  in_stock?: boolean
+}
+
 const EMPTY = {
-  name:"", category:CATEGORIES[0], price:"", unit:"",
-  image:"", badge:"", description:"", minOrder:""
+  name: "", category: CATEGORIES[0], price: "", unit: "",
+  image_url: "", badge: "", description: "", min_order: "", in_stock: true
 }
 
 export default function Dashboard() {
-  const [authed,   setAuthed]   = useState(false)
-  const [pass,     setPass]     = useState("")
-  const [products, setProducts] = useState<Product[]>([])
-  const [showForm, setShowForm] = useState(false)
-  const [editing,  setEditing]  = useState<Product | null>(null)
-  const [form,     setForm]     = useState(EMPTY)
+  const [authed,    setAuthed]   = useState(false)
+  const [pass,      setPass]     = useState("")
+  const [products,  setProducts] = useState<Product[]>([])
+  const [loading,   setLoading]  = useState(false)
+  const [uploading, setUploading]= useState(false)
+  const [showForm,  setShowForm] = useState(false)
+  const [editing,   setEditing]  = useState<Product | null>(null)
+  const [form,      setForm]     = useState(EMPTY)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { if (authed) setProducts(getProducts()) }, [authed])
+  useEffect(() => { if (authed) fetchProducts() }, [authed])
+
+  async function fetchProducts() {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false })
+    if (!error && data) setProducts(data)
+    setLoading(false)
+  }
 
   const login = (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,34 +59,73 @@ export default function Dashboard() {
   const openEdit = (p: Product) => {
     setEditing(p)
     setForm({
-      name: p.name, category: p.category, price: p.price, unit: p.unit,
-      image: p.image || "", badge: p.badge || "", description: p.description || "", minOrder: p.minOrder || ""
+      name: p.name, category: p.category,
+      price: String(p.price), unit: p.unit,
+      image_url: p.image_url || "", badge: p.badge || "",
+      description: p.description || "", min_order: p.min_order || "",
+      in_stock: p.in_stock ?? true
     })
     setShowForm(true)
   }
 
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setForm(f => ({...f, image: reader.result as string}))
-    reader.readAsDataURL(file)
+    setUploading(true)
+    try {
+      const fileName = `${Date.now()}-${file.name.replace(/\s/g, "-")}`
+      const { data, error } = await supabase.storage
+        .from("product-images")
+        .upload(fileName, file, { upsert: true })
+      if (error) throw error
+      const { data: { publicUrl } } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(data.path)
+      setForm(f => ({ ...f, image_url: publicUrl }))
+    } catch {
+      // fallback: base64 مؤقتاً
+      const reader = new FileReader()
+      reader.onload = () => setForm(f => ({ ...f, image_url: reader.result as string }))
+      reader.readAsDataURL(file)
+    }
+    setUploading(false)
   }
 
-  const saveForm = (e: React.FormEvent) => {
+  const saveForm = async (e: React.FormEvent) => {
     e.preventDefault()
-    const updated = editing
-      ? products.map(p => p.id === editing.id ? { ...p, ...form } : p)
-      : [...products, { ...form, id: Date.now().toString() }]
-    saveProducts(updated); setProducts(updated); setShowForm(false)
+    const payload = {
+      name:        form.name,
+      category:    form.category,
+      price:       parseFloat(String(form.price)),
+      unit:        form.unit,
+      image_url:   form.image_url   || null,
+      badge:       form.badge       || null,
+      description: form.description || null,
+      min_order:   form.min_order   || null,
+      in_stock:    form.in_stock ?? true,
+    }
+    if (editing) {
+      const { error } = await supabase
+        .from("products").update(payload).eq("id", editing.id)
+      if (!error)
+        setProducts(prev => prev.map(p =>
+          p.id === editing.id ? { ...p, ...payload } : p
+        ))
+    } else {
+      const { data, error } = await supabase
+        .from("products").insert([payload]).select().single()
+      if (!error && data) setProducts(prev => [data, ...prev])
+    }
+    setShowForm(false)
   }
 
-  const del = (id: string) => {
+  const del = async (id: string) => {
     if (!confirm("حذف المنتج؟")) return
-    const updated = products.filter(p => p.id !== id)
-    saveProducts(updated); setProducts(updated)
+    const { error } = await supabase.from("products").delete().eq("id", id)
+    if (!error) setProducts(prev => prev.filter(p => p.id !== id))
   }
 
+  /* ───── Login Screen ───── */
   if (!authed) return (
     <div dir="rtl" className="min-h-screen bg-gray-100 flex items-center justify-center font-sans">
       <div className="bg-white rounded-2xl p-8 shadow-lg w-80">
@@ -75,6 +144,7 @@ export default function Dashboard() {
     </div>
   )
 
+  /* ───── Main Dashboard ───── */
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans">
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
@@ -89,7 +159,12 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
-        {products.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-24 text-gray-400">
+            <div className="text-5xl mb-4 animate-spin">⏳</div>
+            <p className="text-sm">جاري تحميل المنتجات...</p>
+          </div>
+        ) : products.length === 0 ? (
           <div className="text-center py-24 text-gray-400">
             <div className="text-6xl mb-4">📦</div>
             <p className="text-lg font-bold text-gray-500 mb-2">لا توجد منتجات بعد</p>
@@ -115,17 +190,21 @@ export default function Dashboard() {
                   {products.map(p => (
                     <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="px-4 py-3">
-                        {p.image
-                          ? <img src={p.image} alt={p.name} className="w-12 h-12 object-cover rounded-lg" />
+                        {p.image_url
+                          ? <img src={p.image_url} alt={p.name} className="w-12 h-12 object-cover rounded-lg" />
                           : <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">لا صورة</div>
                         }
                       </td>
                       <td className="px-4 py-3 font-medium text-gray-900">{p.name}</td>
                       <td className="px-4 py-3 text-gray-500 text-xs">{p.category}</td>
                       <td className="px-4 py-3 font-bold text-green-700">{p.price} ﷼</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{p.minOrder || "—"}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{p.min_order || "—"}</td>
                       <td className="px-4 py-3">
-                        {p.badge && <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">{p.badge}</span>}
+                        {p.badge && (
+                          <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                            {p.badge}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-3">
@@ -142,6 +221,7 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* ───── Add / Edit Modal ───── */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -149,12 +229,19 @@ export default function Dashboard() {
               {editing ? "✏️ تعديل المنتج" : "➕ إضافة منتج جديد"}
             </h2>
             <form onSubmit={saveForm} className="space-y-4">
+
+              {/* Image Upload */}
               <div>
                 <label className="text-xs font-bold text-gray-700 block mb-2">صورة المنتج</label>
                 <div onClick={() => fileRef.current?.click()}
                   className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-green-500 transition-colors">
-                  {form.image ? (
-                    <img src={form.image} alt="preview" className="w-full h-40 object-cover rounded-lg" />
+                  {uploading ? (
+                    <div className="text-gray-400">
+                      <div className="text-3xl mb-2 animate-spin">⏳</div>
+                      <p className="text-xs">جاري رفع الصورة...</p>
+                    </div>
+                  ) : form.image_url ? (
+                    <img src={form.image_url} alt="preview" className="w-full h-40 object-cover rounded-lg" />
                   ) : (
                     <div className="text-gray-400">
                       <div className="text-3xl mb-2">📷</div>
@@ -164,70 +251,85 @@ export default function Dashboard() {
                   )}
                 </div>
                 <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} className="hidden" />
-                {form.image && (
-                  <button type="button" onClick={() => setForm(f => ({...f, image:""}))}
+                {form.image_url && (
+                  <button type="button" onClick={() => setForm(f => ({ ...f, image_url: "" }))}
                     className="text-xs text-red-500 mt-1 hover:underline">
                     حذف الصورة
                   </button>
                 )}
               </div>
 
+              {/* Name */}
               <div>
                 <label className="text-xs font-bold text-gray-700 block mb-1">اسم المنتج *</label>
-                <input required value={form.name} onChange={e => setForm({...form, name:e.target.value})}
+                <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                   placeholder="مثال: زيت نباتي مكرر"
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500" />
               </div>
 
+              {/* Grid fields */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-gray-700 block mb-1">القسم *</label>
-                  <select required value={form.category} onChange={e => setForm({...form, category:e.target.value})}
+                  <select required value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
                     className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500">
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-700 block mb-1">السعر (ريال) *</label>
-                  <input required type="number" value={form.price} onChange={e => setForm({...form, price:e.target.value})}
+                  <input required type="number" value={form.price}
+                    onChange={e => setForm({ ...form, price: e.target.value })}
                     placeholder="185"
                     className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-700 block mb-1">الوحدة *</label>
-                  <input required value={form.unit} onChange={e => setForm({...form, unit:e.target.value})}
+                  <input required value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })}
                     placeholder="كيس 50 كيلو"
                     className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-700 block mb-1">أقل كمية للطلب *</label>
-                  <input required value={form.minOrder} onChange={e => setForm({...form, minOrder:e.target.value})}
+                  <input required value={form.min_order}
+                    onChange={e => setForm({ ...form, min_order: e.target.value })}
                     placeholder="10 كراتين"
                     className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500" />
                 </div>
               </div>
 
+              {/* Badge */}
               <div>
                 <label className="text-xs font-bold text-gray-700 block mb-1">البادج (اختياري)</label>
-                <input value={form.badge} onChange={e => setForm({...form, badge:e.target.value})}
+                <input value={form.badge} onChange={e => setForm({ ...form, badge: e.target.value })}
                   placeholder="عرض / جديد / تصفية / ستوك"
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500" />
               </div>
 
+              {/* Description */}
               <div>
                 <label className="text-xs font-bold text-gray-700 block mb-1">وصف المنتج (لقوقل)</label>
-                <input value={form.description} onChange={e => setForm({...form, description:e.target.value})}
+                <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
                   placeholder="وصف مختصر للمنتج يظهر في نتائج البحث"
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500" />
               </div>
 
+              {/* in_stock toggle */}
+              <div className="flex items-center gap-3">
+                <input type="checkbox" id="in_stock" checked={form.in_stock}
+                  onChange={e => setForm({ ...form, in_stock: e.target.checked })}
+                  className="w-4 h-4 accent-green-700" />
+                <label htmlFor="in_stock" className="text-sm font-medium text-gray-700">المنتج متوفر</label>
+              </div>
+
+              {/* Buttons */}
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)}
                   className="flex-1 border border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-50 transition-colors">
                   إلغاء
                 </button>
-                <button type="submit"
-                  className="flex-1 bg-green-700 text-white font-bold py-3 rounded-lg hover:bg-green-800 transition-colors">
+                <button type="submit" disabled={uploading}
+                  className="flex-1 bg-green-700 text-white font-bold py-3 rounded-lg hover:bg-green-800 transition-colors disabled:opacity-50">
                   {editing ? "حفظ التعديلات" : "إضافة"}
                 </button>
               </div>
