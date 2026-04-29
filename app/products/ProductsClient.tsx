@@ -18,6 +18,7 @@ interface Product {
 export default function ProductsClient({ products }: { products: Product[] }) {
   const [selectedCat, setSelectedCat] = useState("الكل");
   const [search, setSearch] = useState("");
+  const [showCats, setShowCats] = useState(false);
 
   const categories = [
     "الكل",
@@ -40,7 +41,6 @@ export default function ProductsClient({ products }: { products: Product[] }) {
     return `https://wa.me/${WHATSAPP}?text=${msg}`;
   }
 
-  // ✅ الحل الشامل لـ iOS Safari
   const iosBtnStyle: React.CSSProperties = {
     WebkitTapHighlightColor: "transparent",
     touchAction: "manipulation",
@@ -49,7 +49,6 @@ export default function ProductsClient({ products }: { products: Product[] }) {
     userSelect: "none",
   };
 
-  // ✅ دالة الضغط مع دعم onTouchEnd للأيفون
   function handleCatSelect(cat: string) {
     setSelectedCat(cat);
   }
@@ -81,7 +80,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
 
       <div className="flex flex-1 max-w-7xl mx-auto w-full px-6 py-8 gap-8">
 
-        {/* Sidebar - Desktop */}
+        {/* Sidebar - Desktop فقط */}
         <aside className="hidden md:block w-52 flex-shrink-0">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">الفئات</h2>
           <div className="flex flex-col gap-1">
@@ -90,7 +89,6 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 key={cat}
                 type="button"
                 style={iosBtnStyle}
-                onTouchEnd={(e) => { e.preventDefault(); handleCatSelect(cat); }}
                 onClick={() => handleCatSelect(cat)}
                 className={`w-full text-right px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   selectedCat === cat
@@ -106,27 +104,58 @@ export default function ProductsClient({ products }: { products: Product[] }) {
 
         <main className="flex-1">
 
-          {/* ✅ Mobile Categories — الحل: نقل onTouchEnd للزر نفسه */}
-          <div
-            className="flex md:hidden gap-2 mb-6 pb-2"
-            style={{ overflowX: "auto", WebkitOverflowScrolling: "auto" }}
-          >
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                style={iosBtnStyle}
-                onTouchEnd={(e) => { e.preventDefault(); handleCatSelect(cat); }}
-                onClick={() => handleCatSelect(cat)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors min-h-[44px] ${
-                  selectedCat === cat
-                    ? "bg-green-700 text-white border-green-700"
-                    : "bg-white text-gray-600 border-gray-300"
-                }`}
+          {/* ✅ Mobile Categories — Dropdown بدل الأفقي */}
+          <div className="md:hidden mb-6">
+            <button
+              type="button"
+              style={iosBtnStyle}
+              onTouchEnd={(e) => { e.preventDefault(); setShowCats(!showCats); }}
+              onClick={() => setShowCats(!showCats)}
+              className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 shadow-sm"
+            >
+              <span>📂 الفئة: <span className="text-green-700">{selectedCat}</span></span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18" height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`transition-transform duration-200 ${showCats ? "rotate-180" : ""}`}
               >
-                {cat}
-              </button>
-            ))}
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+
+            {showCats && (
+              <div className="mt-2 bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    style={iosBtnStyle}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleCatSelect(cat);
+                      setShowCats(false);
+                    }}
+                    onClick={() => {
+                      handleCatSelect(cat);
+                      setShowCats(false);
+                    }}
+                    className={`w-full text-right px-4 py-3.5 text-sm font-medium border-b border-gray-100 last:border-0 transition-colors ${
+                      selectedCat === cat
+                        ? "bg-green-50 text-green-700 font-bold"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {selectedCat === cat ? "✓ " : ""}{cat}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Empty State */}
