@@ -4,11 +4,10 @@ import { supabase } from "../lib/supabase"
 
 const PASS = "haweyah2026"
 const CATEGORIES = [
-  "مواد غذائية", "شوكلاتات وسناكات",  "مشروبات", "منظفات وعناية شخصية",
+  "مواد غذائية", "شوكلاتات وسناكات", "مشروبات", "منظفات وعناية شخصية",
   "زيوت وسمون", "بقوليات وحبوب", "أخرى"
 ]
 
-// ✅ الجديد — يقبل null من Supabase
 interface Product {
   id: string
   name: string
@@ -28,24 +27,25 @@ const EMPTY = {
 }
 
 export default function Dashboard() {
-  const [authed,    setAuthed]   = useState(false)
-  const [pass,      setPass]     = useState("")
-  const [products,  setProducts] = useState<Product[]>([])
-  const [loading,   setLoading]  = useState(false)
-  const [uploading, setUploading]= useState(false)
-  const [showForm,  setShowForm] = useState(false)
-  const [editing,   setEditing]  = useState<Product | null>(null)
-  const [form,      setForm]     = useState(EMPTY)
+  const [authed,      setAuthed]    = useState(false)
+  const [pass,        setPass]      = useState("")
+  const [products,    setProducts]  = useState<Product[]>([])
+  const [loading,     setLoading]   = useState(false)
+  const [uploading,   setUploading] = useState(false)
+  const [showForm,    setShowForm]  = useState(false)
+  const [editing,     setEditing]   = useState<Product | null>(null)
+  const [form,        setForm]      = useState(EMPTY)
+  const [aiLoading,   setAiLoading] = useState(false)
+  const [charCount,   setCharCount] = useState(0)
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { if (authed) fetchProducts() }, [authed])
+  useEffect(() => { setCharCount(form.description?.length || 0) }, [form.description])
 
   async function fetchProducts() {
     setLoading(true)
     const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("created_at", { ascending: false })
+      .from("products").select("*").order("created_at", { ascending: false })
     if (!error && data) setProducts(data)
     setLoading(false)
   }
@@ -55,8 +55,7 @@ export default function Dashboard() {
     pass === PASS ? setAuthed(true) : alert("كلمة المرور غير صحيحة")
   }
 
-  const openAdd = () => { setEditing(null); setForm(EMPTY); setShowForm(true) }
-
+  const openAdd  = () => { setEditing(null); setForm(EMPTY); setShowForm(true) }
   const openEdit = (p: Product) => {
     setEditing(p)
     setForm({
@@ -69,6 +68,36 @@ export default function Dashboard() {
     setShowForm(true)
   }
 
+  // ✅ توليد الوصف بالذكاء الاصطناعي
+  async function generateDescription() {
+    if (!form.name || !form.price || !form.unit) {
+      alert("يرجى إدخال اسم المنتج والسعر والوحدة أولاً")
+      return
+    }
+    setAiLoading(true)
+    try {
+      const res = await fetch("/api/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          category: form.category,
+          price: form.price,
+          unit: form.unit,
+        }),
+      })
+      const data = await res.json()
+      if (data.description) {
+        setForm(f => ({ ...f, description: data.description }))
+      } else {
+        alert("فشل التوليد، حاول مرة أخرى")
+      }
+    } catch {
+      alert("خطأ في الاتصال بالذكاء الاصطناعي")
+    }
+    setAiLoading(false)
+  }
+
   const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -76,15 +105,12 @@ export default function Dashboard() {
     try {
       const fileName = `${Date.now()}-${file.name.replace(/\s/g, "-")}`
       const { data, error } = await supabase.storage
-        .from("product-images")
-        .upload(fileName, file, { upsert: true })
+        .from("product-images").upload(fileName, file, { upsert: true })
       if (error) throw error
       const { data: { publicUrl } } = supabase.storage
-        .from("product-images")
-        .getPublicUrl(data.path)
+        .from("product-images").getPublicUrl(data.path)
       setForm(f => ({ ...f, image_url: publicUrl }))
     } catch {
-      // fallback: base64 مؤقتاً
       const reader = new FileReader()
       reader.onload = () => setForm(f => ({ ...f, image_url: reader.result as string }))
       reader.readAsDataURL(file)
@@ -94,8 +120,6 @@ export default function Dashboard() {
 
   const saveForm = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    // تجهيز البيانات
     const tempId = editing ? editing.id : `temp-${Date.now()}`
     const payload = {
       name:        form.name,
@@ -108,25 +132,18 @@ export default function Dashboard() {
       min_order:   form.min_order   || null,
       in_stock:    form.in_stock ?? true,
     }
-
-    // ⚡️ 1. التحديث الفوري في الواجهة (Optimistic UI)
     const optimisticProduct = { id: tempId, ...payload }
     if (editing) {
       setProducts(prev => prev.map(p => p.id === editing.id ? { ...p, ...payload } : p))
     } else {
       setProducts(prev => [optimisticProduct as Product, ...prev])
     }
-    
-    // إغلاق النافذة فوراً ليعطي إحساس بالسرعة الخارقة
     setShowForm(false)
-
-    // ☁️ 2. الحفظ في الخلفية (في سيرفر Supabase)
     if (editing) {
       await supabase.from("products").update(payload).eq("id", editing.id)
     } else {
       const { data, error } = await supabase.from("products").insert([payload]).select().single()
       if (!error && data) {
-        // استبدال المعرف المؤقت بالمعرف الحقيقي بعد نجاح الحفظ بصمت
         setProducts(prev => prev.map(p => p.id === tempId ? data : p))
       }
     }
@@ -134,15 +151,11 @@ export default function Dashboard() {
 
   const del = async (id: string) => {
     if (!confirm("حذف المنتج؟")) return
-    
-    // ⚡️ 1. الحذف الفوري من الشاشة
     setProducts(prev => prev.filter(p => p.id !== id))
-    
-    // ☁️ 2. الحذف من السيرفر في الخلفية
     await supabase.from("products").delete().eq("id", id)
   }
 
-  /* ───── Login Screen ───── */
+  /* ───── Login ───── */
   if (!authed) return (
     <div dir="rtl" className="min-h-screen bg-gray-100 flex items-center justify-center font-sans">
       <div className="bg-white rounded-2xl p-8 shadow-lg w-80">
@@ -161,12 +174,12 @@ export default function Dashboard() {
     </div>
   )
 
-  /* ───── Main Dashboard ───── */
+  /* ───── Dashboard ───── */
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans">
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-4">
-          <a href="/" className="text-gray-400 hover:text-green-700 text-sm no-underline">← الرئيسية</a>
+          <a href="/" className="text-gray-400 hover:text-green-700 text-sm">← الرئيسية</a>
           <h1 className="text-xl font-extrabold text-green-800">⚙️ لوحة التحكم — حاوية</h1>
         </div>
         <button onClick={openAdd}
@@ -218,9 +231,7 @@ export default function Dashboard() {
                       <td className="px-4 py-3 text-gray-500 text-xs">{p.min_order || "—"}</td>
                       <td className="px-4 py-3">
                         {p.badge && (
-                          <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
-                            {p.badge}
-                          </span>
+                          <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">{p.badge}</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
@@ -238,7 +249,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ───── Add / Edit Modal ───── */}
+      {/* ───── Modal ───── */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -247,7 +258,7 @@ export default function Dashboard() {
             </h2>
             <form onSubmit={saveForm} className="space-y-4">
 
-              {/* Image Upload */}
+              {/* Image */}
               <div>
                 <label className="text-xs font-bold text-gray-700 block mb-2">صورة المنتج</label>
                 <div onClick={() => fileRef.current?.click()}
@@ -323,15 +334,50 @@ export default function Dashboard() {
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500" />
               </div>
 
-              {/* Description */}
+              {/* ✅ Description with AI Button */}
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">وصف المنتج (لقوقل)</label>
-                <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-                  placeholder="وصف مختصر للمنتج يظهر في نتائج البحث"
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500" />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-gray-700">
+                    وصف المنتج SEO
+                    <span className={`mr-2 text-xs font-normal ${charCount > 160 ? "text-red-500" : charCount > 100 ? "text-green-600" : "text-gray-400"}`}>
+                      {charCount}/160
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={generateDescription}
+                    disabled={aiLoading}
+                    className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    {aiLoading ? (
+                      <>
+                        <span className="animate-spin inline-block">⏳</span>
+                        <span>جاري التوليد...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>✨</span>
+                        <span>توليد بالذكاء الاصطناعي</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <textarea
+                  value={form.description}
+                  onChange={e => setForm({ ...form, description: e.target.value })}
+                  placeholder="اضغط ✨ للتوليد التلقائي، أو اكتب وصفاً يظهر في نتائج قوقل (120-160 حرف مثالي)"
+                  rows={3}
+                  maxLength={200}
+                  className={`w-full px-3 py-2.5 border rounded-lg text-sm outline-none focus:border-purple-500 resize-none ${
+                    charCount > 160 ? "border-red-400 bg-red-50" : "border-gray-300"
+                  }`}
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  💡 هذا الوصف يظهر في نتائج قوقل أسفل اسم الصفحة — كلما كان أدق كلما كان أعلى بالبحث
+                </p>
               </div>
 
-              {/* in_stock toggle */}
+              {/* in_stock */}
               <div className="flex items-center gap-3">
                 <input type="checkbox" id="in_stock" checked={form.in_stock}
                   onChange={e => setForm({ ...form, in_stock: e.target.checked })}
