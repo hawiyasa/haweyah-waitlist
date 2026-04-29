@@ -68,3 +68,8 @@ img {
   position: relative;
   z-index: 30;
 }
+/* ✅ حل مشكلة الأزرار في Safari الأيفون */
+button, a, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}

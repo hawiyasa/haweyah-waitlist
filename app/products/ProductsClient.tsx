@@ -40,14 +40,20 @@ export default function ProductsClient({ products }: { products: Product[] }) {
     return `https://wa.me/${WHATSAPP}?text=${msg}`;
   }
 
+  // ✅ Style ثابت لحل مشكلة الأيفون
+  const iosBtnStyle: React.CSSProperties = {
+    WebkitTapHighlightColor: "transparent",
+    touchAction: "manipulation",
+  };
+
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans flex flex-col">
+
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="text-2xl font-extrabold text-green-800 tracking-tight">حاوية</a>
-          <span className="text-sm text-gray-500 font-medium hidden sm:block">
-            المنتجات والعروض          </span>
+          <a href="/" style={iosBtnStyle} className="text-2xl font-extrabold text-green-800 tracking-tight">حاوية</a>
+          <span className="text-sm text-gray-500 font-medium hidden sm:block">المنتجات والعروض</span>
         </div>
       </header>
 
@@ -60,18 +66,22 @@ export default function ProductsClient({ products }: { products: Product[] }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full max-w-xl border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-gray-50"
+            style={{ fontSize: "16px" }} // ✅ يمنع iOS من التكبير التلقائي
           />
         </div>
       </div>
 
       <div className="flex flex-1 max-w-7xl mx-auto w-full px-6 py-8 gap-8">
-        {/* Sidebar */}
+
+        {/* Sidebar - Desktop */}
         <aside className="hidden md:block w-52 flex-shrink-0">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">الفئات</h2>
           <div className="flex flex-col gap-1">
             {categories.map((cat) => (
               <button
                 key={cat}
+                type="button"
+                style={iosBtnStyle}
                 onClick={() => setSelectedCat(cat)}
                 className={`w-full text-right px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   selectedCat === cat
@@ -86,11 +96,14 @@ export default function ProductsClient({ products }: { products: Product[] }) {
         </aside>
 
         <main className="flex-1">
+
           {/* Mobile Categories */}
           <div className="flex md:hidden gap-2 mb-6 overflow-x-auto pb-2">
             {categories.map((cat) => (
               <button
                 key={cat}
+                type="button"
+                style={iosBtnStyle}
                 onClick={() => setSelectedCat(cat)}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                   selectedCat === cat
@@ -103,7 +116,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
             ))}
           </div>
 
-          {/* Empty */}
+          {/* Empty State */}
           {filtered.length === 0 && (
             <div className="text-center py-24 text-gray-400">
               <div className="text-5xl mb-4">📦</div>
@@ -121,6 +134,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                   <a
                     key={product.id}
                     href={`/products/${product.id}`}
+                    style={iosBtnStyle}
                     className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col group"
                   >
                     <div className="h-48 bg-gray-50 flex items-center justify-center relative overflow-hidden">
@@ -160,6 +174,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                           href={buildWaUrl(product)}
                           target="_blank"
                           rel="noopener noreferrer"
+                          style={iosBtnStyle}
                           onClick={(e) => e.stopPropagation()}
                           className={`block w-full text-center text-white text-sm font-bold py-2.5 rounded-xl transition-colors ${
                             product.in_stock === false
@@ -179,8 +194,8 @@ export default function ProductsClient({ products }: { products: Product[] }) {
         </main>
       </div>
 
-         {/* ───── الفوتر الشامل ───── */}
-         <footer className="bg-gray-900 pt-16 pb-8 border-t border-gray-800 mt-auto">
+      {/* Footer */}
+      <footer className="bg-gray-900 pt-16 pb-8 border-t border-gray-800 mt-auto">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-1">
@@ -195,19 +210,19 @@ export default function ProductsClient({ products }: { products: Product[] }) {
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/" className="hover:text-green-500 transition-colors">الرئيسية</a></li>
-                <li><a href="/products" className="hover:text-green-500 transition-colors">منتجات الجملة</a></li>
-                <li><a href="/#suppliers" className="hover:text-green-500 transition-colors">شبكة الموردين</a></li>
-                <li><a href="/#europe" className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
+                <li><a href="/" style={iosBtnStyle} className="hover:text-green-500 transition-colors">الرئيسية</a></li>
+                <li><a href="/products" style={iosBtnStyle} className="hover:text-green-500 transition-colors">منتجات الجملة</a></li>
+                <li><a href="/#suppliers" style={iosBtnStyle} className="hover:text-green-500 transition-colors">شبكة الموردين</a></li>
+                <li><a href="/#europe" style={iosBtnStyle} className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-bold mb-4">الشركة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/about" className="hover:text-green-500 transition-colors">من نحن</a></li>
-                <li><a href="/contact" className="hover:text-green-500 transition-colors">تواصل معنا</a></li>
-                <li><a href="/terms" className="hover:text-green-500 transition-colors">الشروط والأحكام</a></li>
-                <li><a href="/privacy" className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
+                <li><a href="/about" style={iosBtnStyle} className="hover:text-green-500 transition-colors">من نحن</a></li>
+                <li><a href="/contact" style={iosBtnStyle} className="hover:text-green-500 transition-colors">تواصل معنا</a></li>
+                <li><a href="/terms" style={iosBtnStyle} className="hover:text-green-500 transition-colors">الشروط والأحكام</a></li>
+                <li><a href="/privacy" style={iosBtnStyle} className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
               </ul>
             </div>
             <div>
@@ -227,7 +242,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                   <span>info@hawiyasa.com</span>
                 </li>
                 <li className="mt-4">
-                  <a href="/contact" className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">
+                  <a href="/contact" style={iosBtnStyle} className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">
                     نموذج الاستفسارات
                   </a>
                 </li>
