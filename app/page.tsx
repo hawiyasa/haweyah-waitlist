@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { getProducts, Product } from "./lib/products";
-import { supabase } from "@/lib/supabase"
+import { supabase } from "./lib/supabase"
 function FeaturedProducts() {
   const [featured, setFeatured] = useState<any[]>([])
   const [loaded, setLoaded] = useState(false)

@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 // استيراد Supabase client بدلاً من الملف الوهمي
-import { supabase } from "@/lib/supabase" 
+import { supabase } from "../lib/supabase"
 
 const WHATSAPP = "966535189367"
 
@@ -83,8 +83,7 @@ export default function ProductsPage() {
         </div>
 
         <div className="md:hidden mb-6">
-          abel className="block text-xs font-bold text-gray-700 mb-2">القسم</label>
-          <select
+        <label className="block text-xs font-bold text-gray-700 mb-2">القسم</label>          <select
             value={activeCategory}
             onChange={(e) => setActiveCategory(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
