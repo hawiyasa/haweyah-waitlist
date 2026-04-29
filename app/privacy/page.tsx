@@ -66,7 +66,7 @@ export default function PrivacyPage() {
               إذا كانت لديك أي أسئلة حول سياسة الخصوصية أو كيفية تعاملنا مع بيانات منشأتك، يمكنك التواصل معنا عبر:
             </p>
             <div className="mt-4 bg-gray-50 p-5 rounded-xl border border-gray-100 inline-block w-full">
-              <p className="text-gray-900 mb-2"><strong>البريد الإلكتروني:</strong> privacy@haweyah.com</p>
+              <p className="text-gray-900 mb-2"><strong>البريد الإلكتروني:</strong> info@hhawiyasa.com</p>
               <p className="text-gray-900"><strong>رقم المبيعات والدعم:</strong> 966535189367+</p>
             </div>
           </section>
