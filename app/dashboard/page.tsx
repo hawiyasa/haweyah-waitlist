@@ -70,8 +70,8 @@ export default function Dashboard() {
 
   // ✅ توليد الوصف بالذكاء الاصطناعي
   async function generateDescription() {
-    if (!form.name || !form.price || !form.unit) {
-      alert("يرجى إدخال اسم المنتج والسعر والوحدة أولاً")
+    if (!form.name) {
+      alert("يرجى إدخال اسم المنتج أولاً")
       return
     }
     setAiLoading(true)
@@ -80,20 +80,25 @@ export default function Dashboard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: form.name,
-          category: form.category,
-          price: form.price,
-          unit: form.unit,
+          name:     form.name     || "",
+          category: form.category || "",
+          price:    form.price    || "0",
+          unit:     form.unit     || "",
         }),
       })
+      
+      if (!res.ok) {
+        const err = await res.json()
+        alert(`خطأ: ${err.error || "حاول مرة أخرى"}`)
+        return
+      }
+  
       const data = await res.json()
       if (data.description) {
         setForm(f => ({ ...f, description: data.description }))
-      } else {
-        alert("فشل التوليد، حاول مرة أخرى")
       }
-    } catch {
-      alert("خطأ في الاتصال بالذكاء الاصطناعي")
+    } catch (e) {
+      alert(`خطأ في الاتصال: ${e instanceof Error ? e.message : "تحقق من الاتصال"}`)
     }
     setAiLoading(false)
   }
