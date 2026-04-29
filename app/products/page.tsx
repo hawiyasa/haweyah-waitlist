@@ -1,28 +1,59 @@
 "use client"
 import { useState, useEffect } from "react"
-import { getProducts, CATEGORIES, Product } from "../lib/products"
+// استيراد Supabase client بدلاً من الملف الوهمي
+import { supabase } from "@/lib/supabase" 
 
 const WHATSAPP = "966535189367"
 
+// تعريف نوع المنتج بناءً على قاعدة البيانات الجديدة
+type Product = {
+  id: string
+  name: string
+  category: string
+  price: number
+  unit: string
+  min_order?: number
+  image_url?: string
+  in_stock?: boolean
+}
+
 function buildWaUrl(p: Product) {
   const msg = encodeURIComponent(
-    `مرحباً، أود الاستفسار عن:\n📦 ${p.name}\n💰 السعر: ${p.price} ﷼ / ${p.unit}\n📦 أقل كمية: ${p.minOrder ?? "غير محدد"}`
+    `مرحباً، أود الاستفسار عن:\n📦 ${p.name}\n💰 السعر: ${p.price} ﷼ / ${p.unit}\n📦 أقل كمية: ${p.min_order ?? "غير محدد"}`
   )
   return `https://wa.me/${WHATSAPP}?text=${msg}`
 }
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
+  // سحبنا التصنيفات (Categories) ديناميكياً من المنتجات بدلاً من ملف ثابت
+  const [categories, setCategories] = useState<string[]>(["الكل"])
   const [activeCategory, setActiveCategory] = useState("الكل")
   const [search, setSearch] = useState("")
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    setProducts(getProducts())
-    setLoaded(true)
-  }, [])
+    async function fetchProducts() {
+      // جلب جميع المنتجات من Supabase
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  const categories = ["الكل", ...CATEGORIES]
+      if (error) {
+        console.error("Error fetching products:", error);
+      } else if (data) {
+        setProducts(data);
+        
+        // استخراج التصنيفات الفريدة من المنتجات لإظهارها في القائمة الجانبية
+        const uniqueCategories = Array.from(new Set(data.map(p => p.category)));
+        setCategories(["الكل", ...uniqueCategories]);
+      }
+      setLoaded(true);
+    }
+
+    fetchProducts();
+  }, [])
 
   const filtered = products.filter((p) => {
     const matchCat = activeCategory === "الكل" || p.category === activeCategory
@@ -52,7 +83,7 @@ export default function ProductsPage() {
         </div>
 
         <div className="md:hidden mb-6">
-          <label className="block text-xs font-bold text-gray-700 mb-2">القسم</label>
+          abel className="block text-xs font-bold text-gray-700 mb-2">القسم</label>
           <select
             value={activeCategory}
             onChange={(e) => setActiveCategory(e.target.value)}
@@ -83,12 +114,12 @@ export default function ProductsPage() {
                     checked={activeCategory === cat}
                     onChange={() => setActiveCategory(cat)}
                   />
-                  <label
+                  abel
                     htmlFor={`desktop-cat-${i}`}
                     className={`block w-full cursor-pointer text-right px-4 py-3 text-sm transition-all border-b border-gray-50 last:border-0 ${
                       activeCategory === cat
                         ? "bg-green-50 text-green-700 font-bold"
-                        : "bg-white text-gray-600"
+                        : "bg-white text-gray-600 hover:bg-gray-50"
                     }`}
                   >
                     {cat}
@@ -102,7 +133,7 @@ export default function ProductsPage() {
             {!loaded ? (
               <div className="text-center py-20 text-gray-400">
                 <div className="text-4xl mb-3">⏳</div>
-                <p>جاري التحميل...</p>
+                <p>جاري التحميل من قاعدة البيانات...</p>
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-20 text-gray-400">
@@ -116,44 +147,49 @@ export default function ProductsPage() {
               </div>
             ) : (
               <>
-                <p className="text-xs text-gray-400 mb-4">{filtered.length} منتج</p>
+                <p className="text-xs text-gray-400 mb-4">{filtered.length} منتج متوفر</p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {filtered.map((p) => (
-                    <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all">
-                      <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
-                        {p.image ? (
-                          <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
-                        ) : (
-                          <div className="text-5xl">📦</div>
-                        )}
-
-                        {p.badge && (
-                          <span className="absolute top-2 right-2 bg-green-700 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                            {p.badge}
+                    <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col h-full">
+                      {/* تم تغليف الصورة برابط لصفحة المنتج (SEO/Merchant) */}
+                      <a href={`/products/${p.id}`} className="block relative">
+                        <div className="h-36 bg-gray-50 flex items-center justify-center overflow-hidden">
+                          {p.image_url ? (
+                            <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <div className="text-5xl text-gray-300">📦</div>
+                          )}
+                        </div>
+                        {p.in_stock === false && (
+                          <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                            نفدت الكمية
                           </span>
                         )}
-                      </div>
+                      </a>
 
-                      <div className="p-3">
+                      <div className="p-3 flex flex-col flex-1">
                         <div className="text-xs text-gray-400 mb-0.5">{p.category}</div>
-                        <div className="font-bold text-gray-900 text-sm leading-tight mb-1">{p.name}</div>
+                        <a href={`/products/${p.id}`} className="font-bold text-gray-900 text-sm leading-tight mb-1 hover:text-green-700 transition-colors line-clamp-2">
+                          {p.name}
+                        </a>
                         <div className="text-xs text-gray-400 mb-1">{p.unit}</div>
 
-                        {p.minOrder && (
-                          <div className="text-xs text-orange-600 font-bold mb-2">⚠️ أقل طلب: {p.minOrder}</div>
-                        )}
+                        <div className="mt-auto">
+                          {p.min_order && (
+                            <div className="text-xs text-orange-600 font-bold mb-2">⚠️ أقل طلب: {p.min_order}</div>
+                          )}
+                          <div className="text-base font-extrabold text-green-700 mb-3">{p.price} ﷼</div>
 
-                        <div className="text-base font-extrabold text-green-700 mb-3">{p.price} ﷼</div>
-
-                        <a
-                          href={buildWaUrl(p)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-3 rounded-lg text-center"
-                        >
-                          💬 للطلب والتفاوض
-                        </a>
+                          <a
+                            href={buildWaUrl(p)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-3 rounded-lg text-center transition-colors"
+                          >
+                            💬 للطلب والتفاوض
+                          </a>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -180,40 +216,33 @@ export default function ProductsPage() {
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/" className="hover:text-green-500 transition-colors">الرئيسية</a></li>
-                <li><a href="/products" className="hover:text-green-500 transition-colors">منتجات الجملة</a></li>
-                <li><a href="/#suppliers" className="hover:text-green-500 transition-colors">شبكة الموردين</a></li>
-                <li><a href="/#europe" className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
+                ><a href="/" className="hover:text-green-500 transition-colors">الرئيسية</a></li>
+                ><a href="/products" className="hover:text-green-500 transition-colors">منتجات الجملة</a></li>
+                ><a href="/#suppliers" className="hover:text-green-500 transition-colors">شبكة الموردين</a></li>
+                ><a href="/#europe" className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-white font-bold mb-4">الشركة</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/about" className="hover:text-green-500 transition-colors">من نحن</a></li>
-                <li><a href="/contact" className="hover:text-green-500 transition-colors">تواصل معنا</a></li>
-                <li><a href="/terms" className="hover:text-green-500 transition-colors">الشروط والأحكام</a></li>
-                <li><a href="/privacy" className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
+                ><a href="/about" className="hover:text-green-500 transition-colors">من نحن</a></li>
+                ><a href="/contact" className="hover:text-green-500 transition-colors">تواصل معنا</a></li>
+                ><a href="/terms" className="hover:text-green-500 transition-colors">الشروط والأحكام</a></li>
+                ><a href="/privacy" className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-white font-bold mb-4">دعم العملاء</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li className="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                  </svg>
+                >
                   <span dir="ltr">+966 53 518 9367</span>
                 </li>
-                <li className="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="16" x="2" y="4" rx="2" />
-                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                  </svg>
-                  <span>info@haweyah.com</span>
+                >
+                  <span>info@hawiyasa.com</span>
                 </li>
-                <li className="mt-4">
+                >
                   <a href="/contact" className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">
                     نموذج الاستفسارات
                   </a>

@@ -1,13 +1,34 @@
 "use client";
 import { useState, useEffect } from "react";
 import { getProducts, Product } from "./lib/products";
-
+import { supabase } from "@/lib/supabase"
 function FeaturedProducts() {
-  const [featured, setFeatured] = useState<Product[]>([]);
+  const [featured, setFeatured] = useState<any[]>([])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    setFeatured(getProducts().slice(0, 4));
-  }, []);
+    async function fetchFeatured() {
+      const { data } = await supabase
+        .from('products')
+        .select('*')
+        .limit(4)
+        .order('created_at', { ascending: false })
+      
+      if (data) setFeatured(data)
+      setLoaded(true)
+    }
+    
+    fetchFeatured()
+  }, [])
+
+  if (!loaded) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        <div className="text-3xl mb-3 animate-pulse">⏳</div>
+        <p className="text-sm">جاري تحميل المنتجات...</p>
+      </div>
+    )
+  }
 
   if (featured.length === 0) {
     return (
@@ -21,39 +42,39 @@ function FeaturedProducts() {
         </div>
         <p className="text-sm">لا توجد منتجات حالياً — ستظهر هنا بعد الإضافة من لوحة التحكم</p>
       </div>
-    );
+    )
   }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {featured.map((p) => (
-        <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all">
+        <a href={`/products/${p.id}`} key={p.id} className="group block bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
           <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
-            {p.image ? (
-              <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+            {p.image_url ? (
+              <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
             ) : (
               <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-lg">
-                {p.name.substring(0, 2)}
+                📦
               </div>
             )}
-            {p.badge && (
-              <span className="absolute top-2 right-2 bg-green-700 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                {p.badge}
+            {p.in_stock === false && (
+              <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                نفدت الكمية
               </span>
             )}
           </div>
 
           <div className="p-3">
             <div className="text-xs text-gray-400 mb-1">{p.category}</div>
-            <div className="font-bold text-gray-900 text-sm leading-tight mb-1">{p.name}</div>
+            <div className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-1">{p.name}</div>
             <div className="text-xs text-gray-400 mb-1">{p.unit}</div>
-            {p.minOrder && <div className="text-xs text-orange-600 font-bold mb-1">الحد الأدنى: {p.minOrder}</div>}
+            {p.min_order && <div className="text-xs text-orange-600 font-bold mb-1">الحد الأدنى: {p.min_order}</div>}
             <div className="text-base font-extrabold text-green-700">{p.price} ﷼</div>
           </div>
-        </div>
+        </a>
       ))}
     </div>
-  );
+  )
 }
 
 export default function Home() {
@@ -130,7 +151,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
             <span className="inline-flex items-center gap-2 bg-green-100 text-green-800 border border-green-200 text-xs font-bold px-4 py-1.5 rounded-full mb-6">
-              قريباً في المملكة العربية السعودية
+              اكبر شبكة موردين بالقطاع الغذائي في مكان واحد
             </span>
 
             <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-5">
@@ -436,7 +457,7 @@ export default function Home() {
                     <rect width="20" height="16" x="2" y="4" rx="2" />
                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                   </svg>
-                  <span>info@haweyah.com</span>
+                  <span>info@hawiyasa.com</span>
                 </li>
                 <li className="mt-4">
                   <a href="/contact" className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">
