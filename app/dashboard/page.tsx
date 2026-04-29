@@ -8,17 +8,18 @@ const CATEGORIES = [
   "زيوت وسمون", "بقوليات وحبوب", "أخرى"
 ]
 
+// ✅ الجديد — يقبل null من Supabase
 interface Product {
   id: string
   name: string
   category: string
   price: string | number
   unit: string
-  image_url?: string
-  badge?: string
-  description?: string
-  min_order?: string
-  in_stock?: boolean
+  image_url?: string | null
+  badge?: string | null
+  description?: string | null
+  min_order?: string | null
+  in_stock?: boolean | null
 }
 
 const EMPTY = {
