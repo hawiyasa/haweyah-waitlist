@@ -1,263 +1,254 @@
-"use client"
-import { useState, useEffect } from "react"
-// استيراد Supabase client بدلاً من الملف الوهمي
-import { supabase } from "../lib/supabase"
+"use client";
 
-const WHATSAPP = "966535189367"
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 
-// تعريف نوع المنتج بناءً على قاعدة البيانات الجديدة
-type Product = {
-  id: string
-  name: string
-  category: string
-  price: number
-  unit: string
-  min_order?: number
-  image_url?: string
-  in_stock?: boolean
-}
-
-function buildWaUrl(p: Product) {
-  const msg = encodeURIComponent(
-    `مرحباً، أود الاستفسار عن:\n📦 ${p.name}\n💰 السعر: ${p.price} ﷼ / ${p.unit}\n📦 أقل كمية: ${p.min_order ?? "غير محدد"}`
-  )
-  return `https://wa.me/${WHATSAPP}?text=${msg}`
+interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  unit: string;
+  category?: string;
+  image_url?: string;
+  in_stock?: boolean;
+  min_order?: number;
+  sku?: string;
 }
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  // سحبنا التصنيفات (Categories) ديناميكياً من المنتجات بدلاً من ملف ثابت
-  const [categories, setCategories] = useState<string[]>(["الكل"])
-  const [activeCategory, setActiveCategory] = useState("الكل")
-  const [search, setSearch] = useState("")
-  const [loaded, setLoaded] = useState(false)
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCat, setSelectedCat] = useState("الكل");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function fetchProducts() {
-      // جلب جميع المنتجات من Supabase
+      setLoading(true);
       const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching products:", error);
-      } else if (data) {
-        setProducts(data);
-        
-        // استخراج التصنيفات الفريدة من المنتجات لإظهارها في القائمة الجانبية
-        const uniqueCategories = Array.from(new Set(data.map(p => p.category)));
-        setCategories(["الكل", ...uniqueCategories]);
-      }
-      setLoaded(true);
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error && data) setProducts(data);
+      setLoading(false);
     }
-
     fetchProducts();
-  }, [])
+  }, []);
 
+  // استخراج الفئات من المنتجات
+  const categories = [
+    "الكل",
+    ...Array.from(new Set(products.map((p) => p.category || "عام").filter(Boolean))),
+  ];
+
+  // فلترة المنتجات
   const filtered = products.filter((p) => {
-    const matchCat = activeCategory === "الكل" || p.category === activeCategory
-    const matchSearch = p.name.includes(search) || p.category.includes(search)
-    return matchCat && matchSearch
-  })
+    const matchCat = selectedCat === "الكل" || p.category === selectedCat;
+    const matchSearch =
+      search === "" ||
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      (p.description || "").toLowerCase().includes(search.toLowerCase());
+    return matchCat && matchSearch;
+  });
+
+  const WHATSAPP = "966535189367";
+
+  function buildWaUrl(product: Product) {
+    const msg = encodeURIComponent(
+      `مرحباً، أريد طلب هذا المنتج من منصة حاوية:\n📦 ${product.name}\n💰 السعر: ${product.price} ﷼ / ${product.unit}\nالكمية المطلوبة: `
+    );
+    return `https://wa.me/${WHATSAPP}?text=${msg}`;
+  }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 font-sans">
+    <div dir="rtl" className="min-h-screen bg-gray-50 font-sans flex flex-col">
+      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center gap-4">
-          <a href="/" className="text-2xl font-extrabold text-green-800 shrink-0">حاوية</a>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="🔍 ابحث عن منتج..."
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
-          />
-          <a href="/" className="text-sm text-gray-500 hover:text-green-700 shrink-0">← الرئيسية</a>
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <a href="/" className="text-2xl font-extrabold text-green-800 tracking-tight">
+            حاوية
+          </a>
+          <span className="text-sm text-gray-500 font-medium hidden sm:block">
+            سوق الجملة للمواد الغذائية ومستلزمات التنظيف
+          </span>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-extrabold text-gray-900">منتجات الجملة</h1>
-          <p className="text-gray-500 mt-1">تصفح المنتجات واطلب مباشرة عبر واتساب — بدون تسجيل</p>
-        </div>
-
-        <div className="md:hidden mb-6">
-        <label className="block text-xs font-bold text-gray-700 mb-2">القسم</label>          <select
-            value={activeCategory}
-            onChange={(e) => setActiveCategory(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex gap-6">
-          <aside className="hidden md:block w-48 shrink-0">
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden sticky top-20">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <h3 className="font-bold text-gray-900 text-sm">الأقسام</h3>
-              </div>
-
-              {categories.map((cat, i) => (
-                <div key={cat}>
-                  <input
-                    id={`desktop-cat-${i}`}
-                    type="radio"
-                    name="desktop-category"
-                    className="sr-only"
-                    checked={activeCategory === cat}
-                    onChange={() => setActiveCategory(cat)}
-                  />
-                  abel
-                    htmlFor={`desktop-cat-${i}`}
-                    className={`block w-full cursor-pointer text-right px-4 py-3 text-sm transition-all border-b border-gray-50 last:border-0 ${
-                      activeCategory === cat
-                        ? "bg-green-50 text-green-700 font-bold"
-                        : "bg-white text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {cat}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </aside>
-
-          <div className="flex-1 min-w-0">
-            {!loaded ? (
-              <div className="text-center py-20 text-gray-400">
-                <div className="text-4xl mb-3">⏳</div>
-                <p>جاري التحميل من قاعدة البيانات...</p>
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="text-center py-20 text-gray-400">
-                <div className="text-5xl mb-4">📦</div>
-                <p className="font-bold text-lg text-gray-500">
-                  {products.length === 0 ? "لا توجد منتجات حالياً" : "لا توجد منتجات في هذا القسم"}
-                </p>
-                {products.length === 0 && (
-                  <p className="text-sm mt-2">ستظهر المنتجات هنا بعد إضافتها من لوحة التحكم</p>
-                )}
-              </div>
-            ) : (
-              <>
-                <p className="text-xs text-gray-400 mb-4">{filtered.length} منتج متوفر</p>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {filtered.map((p) => (
-                    <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col h-full">
-                      {/* تم تغليف الصورة برابط لصفحة المنتج (SEO/Merchant) */}
-                      <a href={`/products/${p.id}`} className="block relative">
-                        <div className="h-36 bg-gray-50 flex items-center justify-center overflow-hidden">
-                          {p.image_url ? (
-                            <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
-                          ) : (
-                            <div className="text-5xl text-gray-300">📦</div>
-                          )}
-                        </div>
-                        {p.in_stock === false && (
-                          <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                            نفدت الكمية
-                          </span>
-                        )}
-                      </a>
-
-                      <div className="p-3 flex flex-col flex-1">
-                        <div className="text-xs text-gray-400 mb-0.5">{p.category}</div>
-                        <a href={`/products/${p.id}`} className="font-bold text-gray-900 text-sm leading-tight mb-1 hover:text-green-700 transition-colors line-clamp-2">
-                          {p.name}
-                        </a>
-                        <div className="text-xs text-gray-400 mb-1">{p.unit}</div>
-
-                        <div className="mt-auto">
-                          {p.min_order && (
-                            <div className="text-xs text-orange-600 font-bold mb-2">⚠️ أقل طلب: {p.min_order}</div>
-                          )}
-                          <div className="text-base font-extrabold text-green-700 mb-3">{p.price} ﷼</div>
-
-                          <a
-                            href={buildWaUrl(p)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-3 rounded-lg text-center transition-colors"
-                          >
-                            💬 للطلب والتفاوض
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+      {/* Search Bar */}
+      <div className="bg-white border-b border-gray-100 py-4">
+        <div className="max-w-7xl mx-auto px-6">
+          <input
+            type="text"
+            placeholder="🔍  ابحث عن منتج..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full max-w-xl border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-gray-50"
+          />
         </div>
       </div>
 
-      <footer className="bg-gray-900 pt-16 pb-8 border-t border-gray-800">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            <div className="md:col-span-1">
-              <div className="text-2xl font-extrabold text-white mb-4 tracking-tight flex items-center gap-2">
-                <div className="w-8 h-8 bg-green-700 text-white rounded-md flex items-center justify-center text-sm">ح</div>
-                حاوية
+      <div className="flex flex-1 max-w-7xl mx-auto w-full px-6 py-8 gap-8">
+        {/* Sidebar - Categories */}
+        <aside className="hidden md:block w-52 flex-shrink-0">
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+            الفئات
+          </h2>
+          <div className="flex flex-col gap-1">
+            {categories.map((cat) => (
+              <div key={cat}>
+                <label
+                  onClick={() => setSelectedCat(cat)}
+                  className={`block w-full text-right px-4 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-colors ${
+                    selectedCat === cat
+                      ? "bg-green-700 text-white"
+                      : "bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {cat}
+                </label>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية.
-              </p>
-            </div>
+            ))}
+          </div>
+        </aside>
 
-            <div>
-              <h4 className="text-white font-bold mb-4">المنصة</h4>
-              <ul className="space-y-3 text-sm text-gray-400">
-                ><a href="/" className="hover:text-green-500 transition-colors">الرئيسية</a></li>
-                ><a href="/products" className="hover:text-green-500 transition-colors">منتجات الجملة</a></li>
-                ><a href="/#suppliers" className="hover:text-green-500 transition-colors">شبكة الموردين</a></li>
-                ><a href="/#europe" className="hover:text-green-500 transition-colors">الاستيراد الدولي</a></li>
-              </ul>
-            </div>
+        {/* Mobile Category Pills */}
+        <div className="md:hidden absolute" style={{ display: "none" }} />
 
-            <div>
-              <h4 className="text-white font-bold mb-4">الشركة</h4>
-              <ul className="space-y-3 text-sm text-gray-400">
-                ><a href="/about" className="hover:text-green-500 transition-colors">من نحن</a></li>
-                ><a href="/contact" className="hover:text-green-500 transition-colors">تواصل معنا</a></li>
-                ><a href="/terms" className="hover:text-green-500 transition-colors">الشروط والأحكام</a></li>
-                ><a href="/privacy" className="hover:text-green-500 transition-colors">سياسة الخصوصية</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-white font-bold mb-4">دعم العملاء</h4>
-              <ul className="space-y-3 text-sm text-gray-400">
-                >
-                  <span dir="ltr">+966 53 518 9367</span>
-                </li>
-                >
-                  <span>info@hawiyasa.com</span>
-                </li>
-                >
-                  <a href="/contact" className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">
-                    نموذج الاستفسارات
-                  </a>
-                </li>
-              </ul>
-            </div>
+        {/* Products Grid */}
+        <main className="flex-1">
+          {/* Mobile Categories */}
+          <div className="flex md:hidden gap-2 mb-6 overflow-x-auto pb-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCat(cat)}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                  selectedCat === cat
+                    ? "bg-green-700 text-white border-green-700"
+                    : "bg-white text-gray-600 border-gray-300"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
 
-          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-xs">
-              جميع الحقوق محفوظة © 2026 <strong className="text-gray-300 font-normal">منصة حاوية لتقنية المعلومات</strong>
-            </p>
-            <span className="text-xs text-gray-500">المملكة العربية السعودية - جدة</span>
+          {/* Count */}
+          <div className="mb-4 text-sm text-gray-400">
+            {loading ? "جاري التحميل..." : `${filtered.length} منتج`}
           </div>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl overflow-hidden border border-gray-100 animate-pulse">
+                  <div className="h-48 bg-gray-200" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-3 bg-gray-100 rounded w-full" />
+                    <div className="h-6 bg-gray-200 rounded w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && filtered.length === 0 && (
+            <div className="text-center py-24 text-gray-400">
+              <div className="text-5xl mb-4">📦</div>
+              <p className="font-bold text-gray-500 text-lg mb-1">لا توجد منتجات</p>
+              <p className="text-sm">جرّب تغيير الفئة أو كلمة البحث</p>
+            </div>
+          )}
+
+          {/* Products Grid */}
+          {!loading && filtered.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((product) => (
+                <a
+                  key={product.id}
+                  href={`/products/${product.id}`}
+                  className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col group"
+                >
+                  {/* Product Image */}
+                  <div className="h-48 bg-gray-50 flex items-center justify-center relative overflow-hidden">
+                    {product.image_url ? (
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <span className="text-5xl text-gray-200">📦</span>
+                    )}
+                    {product.in_stock === false && (
+                      <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        نفد
+                      </span>
+                    )}
+                    {product.category && (
+                      <span className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                        {product.category}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-5 flex flex-col flex-1">
+                    <h3 className="font-bold text-gray-900 text-base leading-tight mb-1 line-clamp-2">
+                      {product.name}
+                    </h3>
+                    {product.description && (
+                      <p className="text-xs text-gray-400 line-clamp-2 mb-3">
+                        {product.description}
+                      </p>
+                    )}
+
+                    <div className="mt-auto">
+                      <div className="flex items-baseline gap-1 mb-1">
+                        <span className="text-2xl font-extrabold text-green-700">
+                          {product.price}
+                        </span>
+                        <span className="text-sm text-gray-400">
+                          ﷼ / {product.unit}
+                        </span>
+                      </div>
+                      {product.min_order && (
+                        <p className="text-xs text-gray-400 mb-3">
+                          الحد الأدنى: {product.min_order} {product.unit}
+                        </p>
+                      )}
+
+                      <a
+                        href={buildWaUrl(product)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className={`block w-full text-center text-white text-sm font-bold py-2.5 rounded-xl transition-colors ${
+                          product.in_stock === false
+                            ? "bg-gray-300 cursor-not-allowed pointer-events-none"
+                            : "bg-green-700 hover:bg-green-800"
+                        }`}
+                      >
+                        {product.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
+                      </a>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 py-8 border-t border-gray-800 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 text-center text-gray-500 text-sm">
+          جميع الحقوق محفوظة © 2026 منصة حاوية
         </div>
       </footer>
     </div>
-  )
+  );
 }
