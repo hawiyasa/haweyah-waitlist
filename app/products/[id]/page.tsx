@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { supabase } from "../../lib/supabase";
+import type { Metadata } from "next";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -12,19 +13,52 @@ async function getProduct(id: string) {
   return data;
 }
 
-// دالة جديدة لجلب المنتجات ذات الصلة من نفس القسم
 async function getRelatedProducts(category: string | null | undefined, currentId: string) {
   if (!category) return [];
-  
   const { data } = await supabase
     .from("products")
     .select("*")
     .eq("category", category)
-    .neq("id", currentId) // استبعاد المنتج الحالي
-    .limit(4) // عرض 4 منتجات فقط كحد أقصى
+    .neq("id", currentId)
+    .limit(4)
     .order("created_at", { ascending: false });
-    
   return data || [];
+}
+
+// ✅ Meta tags ديناميكية لكل منتج — قوقل يقرأها
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const product = await getProduct(id);
+  if (!product) return { title: "منتج غير موجود" };
+
+  const title = `${product.name} بالجملة — ${product.price} ﷼/${product.unit} | حاوية`;
+  const description =
+    product.description ||
+    `اشترِ ${product.name} بسعر الجملة ${product.price} ريال/${product.unit}. توريد مباشر للتجار والمحلات في السعودية عبر منصة حاوية.`;
+
+  return {
+    title,
+    description,
+    keywords: `${product.name}, جملة, ${product.category}, توريد, سعودي, حاوية`,
+    openGraph: {
+      title,
+      description,
+      images: product.image_url
+        ? [{ url: product.image_url, width: 800, height: 600, alt: product.name }]
+        : [],
+      locale: "ar_SA",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: product.image_url ? [product.image_url] : [],
+    },
+    alternates: {
+      canonical: `https://haweyah.com/products/${id}`,
+    },
+  };
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -32,15 +66,53 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProduct(id);
   if (!product) notFound();
 
-  // جلب المنتجات ذات الصلة
   const relatedProducts = await getRelatedProducts(product.category, product.id);
 
   const waUrl = `https://wa.me/966535189367?text=${encodeURIComponent(
     `مرحباً، أريد طلب هذا المنتج من منصة حاوية:\n📦 ${product.name}\n💰 السعر: ${product.price} ﷼ / ${product.unit}\nالكمية المطلوبة: `
   )}`;
 
+  // ✅ JSON-LD Schema.org — هذا ما يجعل المنتج يظهر في قوقل شوبينق
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description:
+      product.description ||
+      `${product.name} بسعر الجملة ${product.price} ريال/${product.unit}`,
+    image: product.image_url ? [product.image_url] : [],
+    sku: product.id,
+    brand: { "@type": "Brand", name: "حاوية" },
+    offers: {
+      "@type": "Offer",
+      url: `https://haweyah.com/products/${product.id}`,
+      priceCurrency: "SAR",
+      price: String(product.price),
+      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      availability:
+        product.in_stock === false
+          ? "https://schema.org/OutOfStock"
+          : "https://schema.org/InStock",
+      seller: {
+        "@type": "Organization",
+        name: "حاوية للتوريد",
+        url: "https://haweyah.com",
+      },
+    },
+    category: product.category,
+  };
+
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans flex flex-col">
+
+      {/* ✅ JSON-LD يُحقن في الصفحة — قوقل يقرأه تلقائياً */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <a href="/" className="text-2xl font-extrabold text-green-800">حاوية</a>
@@ -49,7 +121,7 @@ export default async function ProductPage({ params }: Props) {
           </a>
         </div>
       </header>
-      
+
       <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-12">
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm grid grid-cols-1 md:grid-cols-2 mb-16">
           <div className="h-64 md:h-full min-h-[300px] bg-gray-50 flex items-center justify-center relative">
@@ -94,11 +166,10 @@ export default async function ProductPage({ params }: Props) {
           </div>
         </div>
 
-        {/* ───── قسم منتجات ذات صلة ───── */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-extrabold text-gray-900"> منتجات اخرى </h2>
+              <h2 className="text-2xl font-extrabold text-gray-900">منتجات اخرى</h2>
               <a href="/products" className="text-sm font-bold text-green-700 hover:underline">عرض الكل ←</a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -108,14 +179,10 @@ export default async function ProductPage({ params }: Props) {
                     {p.image_url ? (
                       <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                     ) : (
-                      <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-lg">
-                        📦
-                      </div>
+                      <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-lg">📦</div>
                     )}
                     {p.in_stock === false && (
-                      <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                        نفدت الكمية
-                      </span>
+                      <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">نفدت الكمية</span>
                     )}
                   </div>
                   <div className="p-3">
@@ -131,7 +198,6 @@ export default async function ProductPage({ params }: Props) {
         )}
       </main>
 
-      {/* ───── الفوتر الشامل ───── */}
       <footer className="bg-gray-900 pt-16 pb-8 border-t border-gray-800 mt-auto">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
