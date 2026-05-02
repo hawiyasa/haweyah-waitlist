@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const BASE_URL = "https://haweyah.com";
+  const BASE_URL = "https://www.hawiyasa.com";
 
   const { data: products } = await supabase
     .from("products")
