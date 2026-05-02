@@ -43,9 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      images: product.image_url
-        ? [{ url: product.image_url, width: 800, height: 600, alt: product.name }]
-        : [],
+      images: [
+        { 
+          url: product.image_url || "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80", 
+          width: 800, 
+          height: 600, 
+          alt: product.name 
+        }
+      ],
       locale: "ar_SA",
       type: "website",
     },
@@ -78,7 +83,7 @@ export default async function ProductPage({ params }: Props) {
     "@context": "https://schema.org/",
     "@type": "Product",
     name: product.name,
-    image: product.image_url ? [product.image_url] : ["https://haweyah.com/logo.png"],
+    image: product.image_url ? [product.image_url] : ["https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80"],
     description: product.description || `${product.name} بسعر الجملة ${product.price} ريال/${product.unit}`,
     sku: product.id,
     brand: {
