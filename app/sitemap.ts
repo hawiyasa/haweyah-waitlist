@@ -1,6 +1,9 @@
 import { supabase } from "./lib/supabase";
 import type { MetadataRoute } from "next";
 
+// ✅ هذا السطر يجبر Vercel على جلب أحدث المنتجات دائماً وعدم تخزين الـ Sitemap كملف ثابت قديم
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const BASE_URL = "https://haweyah.com";
 
