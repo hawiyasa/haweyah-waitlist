@@ -18,7 +18,7 @@ export async function GET() {
       <g:title>${p.name}</g:title>
       <g:description>${p.description || `${p.name} بسعر الجملة`}</g:description>
       <g:link>${BASE_URL}/products/${p.id}</g:link>
-      <g:image_link>${p.image_url || ""}</g:image_link>
+      <g:image_link>${p.image_url || "https://www.hawiyasa.com/logo.png"}</g:image_link>
       <g:price>${p.price} SAR</g:price>
       <g:availability>${p.in_stock === false ? "out of stock" : "in stock"}</g:availability>
       <g:condition>new</g:condition>
