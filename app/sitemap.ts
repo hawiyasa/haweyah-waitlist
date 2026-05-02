@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabase";
+import { supabase } from "./lib/supabase";  
 import { MetadataRoute } from "next";
 
 export const dynamic = "force-dynamic";
