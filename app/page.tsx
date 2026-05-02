@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  // جلب آخر 6 منتجات لعرضها في الرئيسية (لأن قوقل يحب رؤية محتوى ديناميكي ومتجدد)
+  // جلب آخر المنتجات لعرضها في الرئيسية
   const { data: latestProducts } = await supabase
     .from("products")
     .select("*")
@@ -44,26 +44,17 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* 
-        ✅ حقن كود Schema في الـ HTML مباشرة 
-        هذا الكود غير مرئي للمستخدم، لكن قوقل يقرأه ويعرف أنكم شركة توريد ضخمة
-      */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
       />
       
-      {/* 
-        ✅ إضافة نصوص مخفية (Hidden SEO Text) بكلمات مفتاحية ثقيلة
-        هذه التقنية ممتازة لرفع الترتيب في الكلمات المحددة للشركات بدون تخريب التصميم.
-        استخدمنا sr-only لتكون مقروءة لمحركات البحث فقط.
-      */}
       <h1 className="sr-only">
-        منصة حاوية - لإدارة سلاسل الإمداد وتوريد تجار الجملة و السوبر ماركت والهايبر ماركت بالجملة في السعودية. حلول الاستيراد والتصدير وتوفير المواد الغذائية والمنظفات بأسعار تنافسية.
+        منصة حاوية - لإدارة سلاسل الإمداد وتوريد السوبر ماركت والهايبر ماركت بالجملة في السعودية. حلول الاستيراد والتصدير وتوفير المواد الغذائية والمنظفات بأسعار تنافسية.
       </h1>
 
-      {/* استدعاء تصميمك القديم والمفضل مع تمرير المنتجات (إن كان الـ Client يحتاجها) */}
-      <HomeClient latestProducts={latestProducts || []} />
+      {/* ✅ إصلاح الخطأ: تمرير initialFeatured بدلاً من latestProducts */}
+      <HomeClient initialFeatured={latestProducts || []} />
     </>
   );
 }
