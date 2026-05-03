@@ -142,6 +142,18 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
               <br />
               أسعار المصنع، عروض تصفية، وتوريد يومي في مكان واحد.
             </p>
+
+            {/* ✅ مزايا للشركات */}
+            <div className="flex flex-col gap-3 mb-8">
+              {[
+                "✅ تواصل مباشر مع الموردين بدون وسطاء",
+                "✅ عروض تصفية يومية بأسعار المصنع",
+                "✅ استيراد مباشر من أوروبا وتركيا",
+              ].map((f) => (
+                <div key={f} className="flex items-center gap-2 text-sm text-gray-700 font-medium">{f}</div>
+              ))}
+            </div>
+
             <div className="flex gap-8">
               {[
                 { n: "+500", l: "منتج جملة" },
@@ -173,7 +185,8 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
               </div>
             ) : (
               <>
-                <h2 className="text-center font-bold text-gray-900 mb-1">انضم لقائمة الانتظار</h2>
+                {/* ✅ عنوان جديد */}
+                <h2 className="text-center font-bold text-gray-900 mb-1">ابدأ التوريد — سجّل مؤسستك</h2>
                 <p className="text-center text-xs text-gray-400 mb-5">سجّل الآن لتكون من أوائل المستفيدين فور الإطلاق</p>
                 <form action="/api/waitlist" method="POST" className="space-y-4" onSubmit={() => setLoading(true)}>
                   <div className="mb-5">
@@ -209,6 +222,19 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
                       <input name="phone" required dir="ltr" placeholder="05XXXXXXXX" type="tel"
                         className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-right" />
                     </div>
+                    {/* ✅ حقل نوع النشاط الجديد */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-gray-700">نوع النشاط <span className="text-red-500">*</span></label>
+                      <select name="businessType" required
+                        className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none">
+                        <option value="">اختر نوع النشاط...</option>
+                        <option value="importer">شركة استيراد</option>
+                        <option value="manufacturer">مصنع / منتج</option>
+                        <option value="distributor">موزع / تاجر جملة</option>
+                        <option value="exporter">شركة تصدير</option>
+                        <option value="retailer">تاجر تجزئة / هايبر</option>
+                      </select>
+                    </div>
                     <button type="submit" disabled={loading}
                       className="w-full bg-green-700 hover:bg-green-800 disabled:opacity-70 text-white font-bold py-3 rounded-lg transition-all shadow-md cursor-pointer text-center">
                       {loading ? "جاري إرسال الطلب..." : "تأكيد الطلب والانضمام"}
@@ -233,9 +259,7 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
               مشاهدة الكل ←
             </a>
           </div>
-
           <FeaturedProducts products={initialFeatured} />
-
           <div className="text-center mt-8">
             <a href="/products" className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-md">
               مشاهدة جميع المنتجات ←
