@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import type { Metadata } from "next";
+import WhatsappButton from "./WhatsappButton";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -86,11 +87,9 @@ export default async function ProductPage({ params }: Props) {
     description:
       product.description ||
       `${product.name} بسعر الجملة ${product.price} ريال/${product.unit}`,
-    // ✅ SKU من الجدول مع fallback للـ id
-    sku: product.sku || product.id,
-    mpn: product.sku || product.id,
+    sku: (product as any).sku || product.id,
+    mpn: (product as any).sku || product.id,
     brand: { "@type": "Brand", name: "حاوية" },
-    // ✅ تم حذف aggregateRating — لا تقييمات وهمية
     offers: {
       "@type": "Offer",
       url: `https://www.hawiyasa.com/products/${product.id}`,
@@ -185,27 +184,15 @@ export default async function ProductPage({ params }: Props) {
                 <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
               </div>
             )}
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => {
-                // @ts-ignore
-                window.gtag?.("event", "whatsapp_click", {
-                  product_id: product.id,
-                  product_name: product.name,
-                  product_category: product.category,
-                  product_price: product.price,
-                });
-              }}
-              className={`block w-full text-white font-bold py-4 rounded-xl text-center text-lg transition-colors ${
-                product.in_stock === false
-                  ? "bg-gray-400 pointer-events-none"
-                  : "bg-green-700 hover:bg-green-800"
-              }`}
-            >
-              {product.in_stock === false ? "المنتج غير متوفر" : "💬 الطلب عبر الواتساب"}
-            </a>
+            {/* ✅ Client Component منفصل للـ onClick */}
+            <WhatsappButton
+              waUrl={waUrl}
+              productId={product.id}
+              productName={product.name}
+              productCategory={product.category}
+              productPrice={product.price}
+              inStock={product.in_stock}
+            />
           </div>
         </div>
 
