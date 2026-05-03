@@ -33,11 +33,40 @@ export default function ProductsClient({ products }: { products: Product[] }) {
   });
 
   const WHATSAPP = "966535189367";
+
   function buildWaUrl(product: Product) {
     const msg = encodeURIComponent(
       `مرحباً، أريد طلب هذا المنتج من منصة حاوية:\n📦 ${product.name}\n💰 السعر: ${product.price} ﷼ / ${product.unit}\nالكمية المطلوبة: `
     );
     return `https://wa.me/${WHATSAPP}?text=${msg}`;
+  }
+
+  // ✅ تتبع GA4
+  function trackWhatsapp(product: Product) {
+    // @ts-ignore
+    window.gtag?.("event", "whatsapp_click", {
+      product_id: product.id,
+      product_name: product.name,
+      product_category: product.category,
+      product_price: product.price,
+      page: "products_list",
+    });
+  }
+
+  function trackCategoryFilter(category: string) {
+    // @ts-ignore
+    window.gtag?.("event", "category_filter", {
+      category_name: category,
+    });
+  }
+
+  function trackSearch(term: string) {
+    if (term.length > 2) {
+      // @ts-ignore
+      window.gtag?.("event", "search", {
+        search_term: term,
+      });
+    }
   }
 
   return (
@@ -58,16 +87,22 @@ export default function ProductsClient({ products }: { products: Product[] }) {
             type="text"
             placeholder="🔍  ابحث عن منتج..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              trackSearch(e.target.value); // ✅ تتبع البحث
+            }}
             className="w-full max-w-xl border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-gray-50"
             style={{ fontSize: "16px" }}
           />
 
-          {/* ✅ الحل النهائي للأيفون: select نيتف مضمون 100% */}
+          {/* Mobile select */}
           <div className="md:hidden relative">
             <select
               value={selectedCat}
-              onChange={(e) => setSelectedCat(e.target.value)}
+              onChange={(e) => {
+                setSelectedCat(e.target.value);
+                trackCategoryFilter(e.target.value); // ✅ تتبع الفلتر
+              }}
               className="w-full appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2.5 pr-10 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600"
               style={{ fontSize: "16px" }}
             >
@@ -86,7 +121,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
 
       <div className="flex flex-1 max-w-7xl mx-auto w-full px-6 py-8 gap-8">
 
-        {/* Sidebar - Desktop فقط */}
+        {/* Sidebar - Desktop */}
         <aside className="hidden md:block w-52 flex-shrink-0">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">الفئات</h2>
           <div className="flex flex-col gap-1">
@@ -94,7 +129,10 @@ export default function ProductsClient({ products }: { products: Product[] }) {
               <button
                 key={cat}
                 type="button"
-                onClick={() => setSelectedCat(cat)}
+                onClick={() => {
+                  setSelectedCat(cat);
+                  trackCategoryFilter(cat); // ✅ تتبع الفلتر
+                }}
                 className={`w-full text-right px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   selectedCat === cat
                     ? "bg-green-700 text-white"
@@ -135,6 +173,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                           src={product.image_url}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
                         />
                       ) : (
                         <span className="text-5xl text-gray-200">📦</span>
@@ -166,7 +205,10 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                           href={buildWaUrl(product)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            trackWhatsapp(product); // ✅ تتبع واتساب
+                          }}
                           className={`block w-full text-center text-white text-sm font-bold py-2.5 rounded-xl transition-colors ${
                             product.in_stock === false
                               ? "bg-gray-300 cursor-not-allowed pointer-events-none"
@@ -195,7 +237,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 <span className="text-2xl font-extrabold text-white tracking-tight">حاوية</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار الجملة والتجزئة والمطاعم.
+                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار الجملة والتجزئة والهايبرات والتموينات.
               </p>
             </div>
             <div>
@@ -242,7 +284,8 @@ export default function ProductsClient({ products }: { products: Product[] }) {
           </div>
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-500 text-xs">
-              جميع الحقوق محفوظة © 2026 <strong className="text-gray-300 font-normal">منصة حاوية لتقنية المعلومات</strong>
+              جميع الحقوق محفوظة © 2026{" "}
+              <strong className="text-gray-300 font-normal">منصة حاوية لتقنية المعلومات</strong>
             </p>
             <div className="flex gap-4 text-gray-500">
               <span className="text-xs">المملكة العربية السعودية - جدة</span>
