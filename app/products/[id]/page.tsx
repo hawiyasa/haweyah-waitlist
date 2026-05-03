@@ -86,14 +86,11 @@ export default async function ProductPage({ params }: Props) {
     description:
       product.description ||
       `${product.name} بسعر الجملة ${product.price} ريال/${product.unit}`,
-    sku: product.id,
-    mpn: product.id,
+    // ✅ SKU من الجدول مع fallback للـ id
+    sku: product.sku || product.id,
+    mpn: product.sku || product.id,
     brand: { "@type": "Brand", name: "حاوية" },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "5.0",
-      reviewCount: "1",
-    },
+    // ✅ تم حذف aggregateRating — لا تقييمات وهمية
     offers: {
       "@type": "Offer",
       url: `https://www.hawiyasa.com/products/${product.id}`,
@@ -188,7 +185,6 @@ export default async function ProductPage({ params }: Props) {
                 <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
               </div>
             )}
-            {/* ✅ زر واتساب مع تتبع GA4 */}
             <a
               href={waUrl}
               target="_blank"
@@ -216,7 +212,7 @@ export default async function ProductPage({ params }: Props) {
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-extrabold text-gray-900">منتجات اخرى</h2>
+              <h2 className="text-2xl font-extrabold text-gray-900">منتجات أخرى</h2>
               <a href="/products" className="text-sm font-bold text-green-700 hover:underline">عرض الكل ←</a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
