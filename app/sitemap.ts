@@ -7,18 +7,14 @@ export const revalidate = 0;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const BASE_URL = "https://www.hawiyasa.com";
 
-  const { data: products, error } = await supabase
+  const { data: products } = await supabase
     .from("products")
-    .select("id, updated_at")
+    .select("id, created_at") // ✅ تم التصحيح
     .order("created_at", { ascending: false });
-
-  // ✅ مؤقت للتشخيص
-  console.log("Sitemap products count:", products?.length);
-  console.log("Sitemap error:", error);
 
   const productUrls = (products || []).map((p) => ({
     url: `${BASE_URL}/products/${p.id}`,
-    lastModified: new Date(p.updated_at || Date.now()),
+    lastModified: new Date(p.created_at || Date.now()), // ✅ تم التصحيح
     changeFrequency: "daily" as const,
     priority: 0.8,
   }));
