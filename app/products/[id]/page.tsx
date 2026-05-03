@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: product.image_url ? [product.image_url] : [],
     },
     alternates: {
-      canonical: `https://www.hawiyasa.com/products/${id}`, // ✅ تم التصحيح
+      canonical: `https://www.hawiyasa.com/products/${id}`,
     },
   };
 }
@@ -87,11 +87,8 @@ export default async function ProductPage({ params }: Props) {
       product.description ||
       `${product.name} بسعر الجملة ${product.price} ريال/${product.unit}`,
     sku: product.id,
-    mpn: product.id, // ✅ مضاف
-    brand: {
-      "@type": "Brand",
-      name: "حاوية",
-    },
+    mpn: product.id,
+    brand: { "@type": "Brand", name: "حاوية" },
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: "5.0",
@@ -99,55 +96,33 @@ export default async function ProductPage({ params }: Props) {
     },
     offers: {
       "@type": "Offer",
-      url: `https://www.hawiyasa.com/products/${product.id}`, // ✅ تم التصحيح
+      url: `https://www.hawiyasa.com/products/${product.id}`,
       priceCurrency: "SAR",
       price: String(product.price),
       priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
+        .toISOString().split("T")[0],
       itemCondition: "https://schema.org/NewCondition",
       availability:
         product.in_stock === false
           ? "https://schema.org/OutOfStock"
           : "https://schema.org/InStock",
-      seller: {
-        "@type": "Organization",
-        name: "منصة حاوية للتوريد",
-      },
+      seller: { "@type": "Organization", name: "منصة حاوية للتوريد" },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         applicableCountry: "SA",
-        returnPolicyCategory:
-          "https://schema.org/MerchantReturnFiniteReturnWindow",
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
         merchantReturnDays: 3,
         returnMethod: "https://schema.org/ReturnAtKiosk",
         returnFees: "https://schema.org/FreeReturn",
       },
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        shippingRate: {
-          "@type": "MonetaryAmount",
-          value: "0",
-          currency: "SAR",
-        },
-        shippingDestination: {
-          "@type": "DefinedRegion",
-          addressCountry: "SA",
-        },
+        shippingRate: { "@type": "MonetaryAmount", value: "0", currency: "SAR" },
+        shippingDestination: { "@type": "DefinedRegion", addressCountry: "SA" },
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "d",
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 1,
-            maxValue: 3,
-            unitCode: "d",
-          },
+          handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 1, unitCode: "d" },
+          transitTime: { "@type": "QuantitativeValue", minValue: 1, maxValue: 3, unitCode: "d" },
         },
       },
     },
@@ -198,17 +173,11 @@ export default async function ProductPage({ params }: Props) {
             <div className="space-y-3 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-100">
               <div className="flex justify-between border-b border-gray-200 pb-2">
                 <span className="text-gray-500 text-sm">الحد الأدنى للطلب</span>
-                <span className="font-bold text-gray-900 text-sm">
-                  {product.min_order || "غير محدد"}
-                </span>
+                <span className="font-bold text-gray-900 text-sm">{product.min_order || "غير محدد"}</span>
               </div>
               <div className="flex justify-between pt-1">
                 <span className="text-gray-500 text-sm">حالة التوفر</span>
-                <span
-                  className={`font-bold text-sm ${
-                    product.in_stock !== false ? "text-green-600" : "text-red-600"
-                  }`}
-                >
+                <span className={`font-bold text-sm ${product.in_stock !== false ? "text-green-600" : "text-red-600"}`}>
                   {product.in_stock !== false ? "متوفر" : "غير متوفر"}
                 </span>
               </div>
@@ -219,10 +188,20 @@ export default async function ProductPage({ params }: Props) {
                 <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
               </div>
             )}
+            {/* ✅ زر واتساب مع تتبع GA4 */}
             <a
               href={waUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => {
+                // @ts-ignore
+                window.gtag?.("event", "whatsapp_click", {
+                  product_id: product.id,
+                  product_name: product.name,
+                  product_category: product.category,
+                  product_price: product.price,
+                });
+              }}
               className={`block w-full text-white font-bold py-4 rounded-xl text-center text-lg transition-colors ${
                 product.in_stock === false
                   ? "bg-gray-400 pointer-events-none"
@@ -238,41 +217,27 @@ export default async function ProductPage({ params }: Props) {
           <div className="mt-16">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-extrabold text-gray-900">منتجات اخرى</h2>
-              <a href="/products" className="text-sm font-bold text-green-700 hover:underline">
-                عرض الكل ←
-              </a>
+              <a href="/products" className="text-sm font-bold text-green-700 hover:underline">عرض الكل ←</a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {relatedProducts.map((p) => (
-                <a
-                  href={`/products/${p.id}`}
-                  key={p.id}
-                  className="group block bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all"
-                >
+                <a href={`/products/${p.id}`} key={p.id}
+                  className="group block bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
                     {p.image_url ? (
-                      <img
-                        src={p.image_url}
-                        alt={p.name}
+                      <img src={p.image_url} alt={p.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
+                        loading="lazy" />
                     ) : (
-                      <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-lg">
-                        📦
-                      </div>
+                      <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-lg">📦</div>
                     )}
                     {p.in_stock === false && (
-                      <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                        نفدت الكمية
-                      </span>
+                      <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">نفدت الكمية</span>
                     )}
                   </div>
                   <div className="p-3">
                     <div className="text-xs text-gray-400 mb-1">{p.category}</div>
-                    <div className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-1">
-                      {p.name}
-                    </div>
+                    <div className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-1">{p.name}</div>
                     <div className="text-xs text-gray-400 mb-1">{p.unit}</div>
                     <div className="text-base font-extrabold text-green-700">{p.price} ﷼</div>
                   </div>
@@ -288,18 +253,11 @@ export default async function ProductPage({ params }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-1">
               <div className="flex items-center gap-2.5 mb-4">
-                <img
-                  src="/logo.png"
-                  alt="حاوية"
-                  width={34}
-                  height={34}
-                  className="object-contain brightness-0 invert"
-                />
+                <img src="/logo.png" alt="حاوية" width={34} height={34} className="object-contain brightness-0 invert" />
                 <span className="text-2xl font-extrabold text-white tracking-tight">حاوية</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع
-                والموردين مباشرة بتجار الجملة والتجزئة والمطاعم.
+                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار الجملة والتجزئة والمطاعم.
               </p>
             </div>
             <div>

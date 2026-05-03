@@ -1,4 +1,4 @@
-import type { MetadataRoute } from "next"
+import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/dashboard", "/api/"],
       },
     ],
-    sitemap: "https://haweyah.com/sitemap.xml",
-    host: "https://haweyah.com",
-  }
+    sitemap: "https://www.hawiyasa.com/sitemap.xml", // ✅ تم التصحيح
+    host: "https://www.hawiyasa.com",               // ✅ تم التصحيح
+  };
 }
