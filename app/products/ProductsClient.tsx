@@ -84,6 +84,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
         </div>
       </header>
 
+      {/* التابز */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 flex gap-2 py-3">
           <button type="button" onClick={() => { setActiveTab("products"); setSelectedCat("الكل"); }}
@@ -101,6 +102,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
         </div>
       </div>
 
+      {/* Search */}
       <div className="bg-white border-b border-gray-100 py-4">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row gap-3">
           <input type="text" placeholder="🔍  ابحث عن منتج..." value={search}
@@ -123,6 +125,8 @@ export default function ProductsClient({ products }: { products: Product[] }) {
       </div>
 
       <div className="flex flex-1 max-w-7xl mx-auto w-full px-6 py-8 gap-8">
+
+        {/* Sidebar Desktop */}
         <aside className="hidden md:block w-52 flex-shrink-0">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">الفئات</h2>
           <div className="flex flex-col gap-1">
@@ -155,13 +159,16 @@ export default function ProductsClient({ products }: { products: Product[] }) {
               <div className="mb-4 text-sm text-gray-400">{filtered.length} منتج</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map((product) => (
-                  <a key={product.id} href={`/products/${product.id}`}
-                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col group">
-
+                  <div
+                    key={product.id}
+                    onClick={() => { window.location.href = `/products/${product.id}`; }}
+                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col cursor-pointer group"
+                  >
                     <div className="h-48 bg-gray-50 flex items-center justify-center relative overflow-hidden">
                       {product.image_url ? (
                         <img src={product.image_url} alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy" />
                       ) : (
                         <span className="text-5xl text-gray-200">📦</span>
                       )}
@@ -190,31 +197,24 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                           <p className="text-xs text-gray-400 mb-3">الحد الأدنى: {product.min_order}</p>
                         )}
 
-                        {/* ✅ زر الكمبيوتر */}
-                        <a href={buildWaUrl(product)} target="_blank" rel="noopener noreferrer"
+                        {/* ✅ زر واتساب — واحد يشتغل على الكل بما في ذلك iOS */}
+                        <a
+                          href={buildWaUrl(product)}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           onClick={(e) => { e.stopPropagation(); trackWhatsapp(product); }}
-                          className={`hidden md:block w-full text-center text-white text-sm font-bold py-2.5 rounded-xl transition-colors ${
-                            product.in_stock === false
-                              ? "bg-gray-300 cursor-not-allowed pointer-events-none"
-                              : "bg-green-700 hover:bg-green-800"
-                          }`}>
-                          {product.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
-                        </a>
-
-                        {/* ✅ زر الموبايل — بدون stopPropagation لضمان عمله على iOS */}
-                        <a href={buildWaUrl(product)} target="_blank" rel="noopener noreferrer"
-                          onClick={() => trackWhatsapp(product)}
-                          className={`md:hidden w-full text-center text-white text-sm font-bold py-3 rounded-xl transition-colors touch-manipulation ${
+                          className={`block w-full text-center text-white text-sm font-bold py-3 rounded-xl touch-manipulation ${
                             product.in_stock === false
                               ? "bg-gray-300 pointer-events-none"
-                              : "bg-green-700 active:bg-green-900"
+                              : "bg-green-700 hover:bg-green-800 active:bg-green-900"
                           }`}
-                          style={{ WebkitTapHighlightColor: "transparent", display: "block" }}>
+                          style={{ WebkitTapHighlightColor: "transparent" }}
+                        >
                           {product.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
                         </a>
                       </div>
                     </div>
-                  </a>
+                  </div>
                 ))}
               </div>
             </>
@@ -230,7 +230,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 <img src="/logo.png" alt="حاوية" width={34} height={34} className="object-contain brightness-0 invert" />
                 <span className="text-2xl font-extrabold text-white tracking-tight">حاوية</span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6">سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار الجملة والتجزئة والهايبرات والتموينات.</p>
+              <p className="text-gray-400 text-sm leading-relaxed">سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية.</p>
             </div>
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>
@@ -266,15 +266,12 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                   </svg>
                   <span>info@hawiyasa.com</span>
                 </li>
-                <li className="mt-4">
-                  <a href="/contact" className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">نموذج الاستفسارات</a>
-                </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-500 text-xs">جميع الحقوق محفوظة © 2026 <strong className="text-gray-300 font-normal">منصة حاوية لتقنية المعلومات</strong></p>
-            <div className="flex gap-4 text-gray-500"><span className="text-xs">المملكة العربية السعودية - جدة</span></div>
+            <span className="text-gray-500 text-xs">المملكة العربية السعودية - جدة</span>
           </div>
         </div>
       </footer>

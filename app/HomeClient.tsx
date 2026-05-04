@@ -36,9 +36,9 @@ function trackWhatsapp(product: Product) {
 
 function ProductCard({ p }: { p: Product }) {
   return (
-    <a
-      href={`/products/${p.id}`}
-      className="group block bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all"
+    <div
+      onClick={() => { window.location.href = `/products/${p.id}`; }}
+      className="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col"
     >
       <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
         {p.image_url ? (
@@ -63,38 +63,22 @@ function ProductCard({ p }: { p: Product }) {
         {p.min_order && <div className="text-xs text-orange-600 font-bold mb-1">الحد الأدنى: {p.min_order}</div>}
         <div className="text-base font-extrabold text-green-700 mb-3">{p.price} ﷼</div>
 
-        {/* ✅ زر الكمبيوتر */}
         <a
           href={buildWaUrl(p)}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => { e.stopPropagation(); trackWhatsapp(p); }}
-          className={`hidden md:block w-full text-center text-white text-xs font-bold py-2 rounded-lg transition-colors ${
-            p.in_stock === false
-              ? "bg-gray-300 cursor-not-allowed pointer-events-none"
-              : "bg-green-700 hover:bg-green-800"
-          }`}
-        >
-          {p.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
-        </a>
-
-        {/* ✅ زر الموبايل — بدون stopPropagation لضمان عمله على iOS */}
-        <a
-          href={buildWaUrl(p)}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => trackWhatsapp(p)}
-          className={`md:hidden w-full text-center text-white text-xs font-bold py-2.5 rounded-lg transition-colors touch-manipulation ${
+          className={`block w-full text-center text-white text-xs font-bold py-2.5 rounded-lg touch-manipulation ${
             p.in_stock === false
               ? "bg-gray-300 pointer-events-none"
-              : "bg-green-700 active:bg-green-900"
+              : "bg-green-700 hover:bg-green-800 active:bg-green-900"
           }`}
-          style={{ WebkitTapHighlightColor: "transparent", display: "block" }}
+          style={{ WebkitTapHighlightColor: "transparent" }}
         >
           {p.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
         </a>
       </div>
-    </a>
+    </div>
   );
 }
 
@@ -160,6 +144,7 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
   return (
     <div dir="rtl" className="min-h-screen bg-white font-sans">
 
+      {/* Navbar */}
       <nav className={`sticky top-0 z-[100] bg-white border-b border-gray-200 transition-shadow ${scrolled ? "shadow-sm" : ""}`}>
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between border-b border-gray-100">
           <a href="#home" className="flex items-center gap-2.5">
@@ -220,6 +205,7 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
             </div>
           </div>
 
+          {/* Form */}
           <div id="join-form" className="bg-white border border-gray-200 rounded-2xl p-8 shadow-xl relative z-10">
             {success ? (
               <div className="text-center py-8 bg-green-50 rounded-xl">
@@ -323,9 +309,9 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
             </button>
           </div>
           {offersTab === "products" ? (
-            <FeaturedProducts products={initialFeatured} emptyMsg="لا توجد منتجات حالياً — ستظهر هنا بعد الإضافة من لوحة التحكم" />
+            <FeaturedProducts products={initialFeatured} emptyMsg="لا توجد منتجات حالياً" />
           ) : (
-            <FeaturedProducts products={initialClearance} emptyMsg="لا توجد منتجات تصفية حالياً — أضف منتجاً وضع badge = تصفية" />
+            <FeaturedProducts products={initialClearance} emptyMsg="لا توجد منتجات تصفية حالياً" />
           )}
           <div className="text-center mt-8">
             <a href={offersTab === "clearance" ? "/products?tab=clearance" : "/products"}
@@ -431,7 +417,7 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
                 <img src="/logo.png" alt="حاوية" width={34} height={34} className="object-contain brightness-0 invert" />
                 <span className="text-2xl font-extrabold text-white tracking-tight">حاوية</span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6">سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار الجملة والتجزئة والهايبرات والتموينات.</p>
+              <p className="text-gray-400 text-sm leading-relaxed mb-6">سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية.</p>
             </div>
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>
@@ -467,15 +453,12 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
                   </svg>
                   <span>info@hawiyasa.com</span>
                 </li>
-                <li className="mt-4">
-                  <a href="/contact" className="inline-block border border-gray-700 hover:border-green-600 text-gray-300 hover:text-white text-xs font-bold py-2 px-4 rounded transition-colors">نموذج الاستفسارات</a>
-                </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-500 text-xs">جميع الحقوق محفوظة © 2026 <strong className="text-gray-300 font-normal">منصة حاوية لتقنية المعلومات</strong></p>
-            <div className="flex gap-4 text-gray-500"><span className="text-xs">المملكة العربية السعودية - جدة</span></div>
+            <span className="text-gray-500 text-xs">المملكة العربية السعودية - جدة</span>
           </div>
         </div>
       </footer>
