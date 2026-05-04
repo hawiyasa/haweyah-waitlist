@@ -23,11 +23,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab: tabParam } = await searchParams;
+  const tab = tabParam === "clearance" ? "clearance" : "products";
+
   const { data: products } = await supabase
     .from("products")
     .select("*")
     .order("created_at", { ascending: false });
 
-  return <ProductsClient products={products || []} />;
+  return <ProductsClient products={products ?? []} tab={tab} />;
 }
