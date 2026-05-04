@@ -17,16 +17,13 @@ interface Product {
 export default function ProductsClient({ products }: { products: Product[] }) {
   const [selectedCat, setSelectedCat] = useState("الكل");
   const [search, setSearch] = useState("");
-  // ✅ تاب المنتجات أو التصفية
   const [activeTab, setActiveTab] = useState<"products" | "clearance">("products");
 
-  // ✅ قراءة ?tab=clearance من الرابط
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("tab") === "clearance") setActiveTab("clearance");
   }, []);
 
-  // ✅ فلترة بحسب التاب أولاً
   const tabFiltered = products.filter((p) =>
     activeTab === "clearance" ? p.badge === "تصفية" : p.badge !== "تصفية"
   );
@@ -87,52 +84,33 @@ export default function ProductsClient({ products }: { products: Product[] }) {
         </div>
       </header>
 
-      {/* ✅ التابز */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 flex gap-2 py-3">
-          <button
-            type="button"
-            onClick={() => { setActiveTab("products"); setSelectedCat("الكل"); }}
+          <button type="button" onClick={() => { setActiveTab("products"); setSelectedCat("الكل"); }}
             className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
-              activeTab === "products"
-                ? "bg-green-700 text-white shadow-sm"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
+              activeTab === "products" ? "bg-green-700 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}>
             📦 المنتجات
           </button>
-          <button
-            type="button"
-            onClick={() => { setActiveTab("clearance"); setSelectedCat("الكل"); }}
+          <button type="button" onClick={() => { setActiveTab("clearance"); setSelectedCat("الكل"); }}
             className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
-              activeTab === "clearance"
-                ? "bg-orange-500 text-white shadow-sm"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
+              activeTab === "clearance" ? "bg-orange-500 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}>
             🏷️ تصفية وستوكات
           </button>
         </div>
       </div>
 
-      {/* Search */}
       <div className="bg-white border-b border-gray-100 py-4">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            placeholder="🔍  ابحث عن منتج..."
-            value={search}
+          <input type="text" placeholder="🔍  ابحث عن منتج..." value={search}
             onChange={(e) => { setSearch(e.target.value); trackSearch(e.target.value); }}
             className="w-full max-w-xl border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-gray-50"
-            style={{ fontSize: "16px" }}
-          />
+            style={{ fontSize: "16px" }} />
           <div className="md:hidden relative">
-            <select
-              value={selectedCat}
-              onChange={(e) => { setSelectedCat(e.target.value); trackCategoryFilter(e.target.value); }}
+            <select value={selectedCat} onChange={(e) => { setSelectedCat(e.target.value); trackCategoryFilter(e.target.value); }}
               className="w-full appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2.5 pr-10 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600"
-              style={{ fontSize: "16px" }}
-            >
+              style={{ fontSize: "16px" }}>
               {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
             </select>
             <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
@@ -145,14 +123,11 @@ export default function ProductsClient({ products }: { products: Product[] }) {
       </div>
 
       <div className="flex flex-1 max-w-7xl mx-auto w-full px-6 py-8 gap-8">
-
-        {/* Sidebar */}
         <aside className="hidden md:block w-52 flex-shrink-0">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">الفئات</h2>
           <div className="flex flex-col gap-1">
             {categories.map((cat) => (
-              <button key={cat} type="button"
-                onClick={() => { setSelectedCat(cat); trackCategoryFilter(cat); }}
+              <button key={cat} type="button" onClick={() => { setSelectedCat(cat); trackCategoryFilter(cat); }}
                 className={`w-full text-right px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   selectedCat === cat
                     ? activeTab === "clearance" ? "bg-orange-500 text-white" : "bg-green-700 text-white"
@@ -182,6 +157,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 {filtered.map((product) => (
                   <a key={product.id} href={`/products/${product.id}`}
                     className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col group">
+
                     <div className="h-48 bg-gray-50 flex items-center justify-center relative overflow-hidden">
                       {product.image_url ? (
                         <img src={product.image_url} alt={product.name}
@@ -199,6 +175,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                         <span className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">{product.category}</span>
                       )}
                     </div>
+
                     <div className="p-5 flex flex-col flex-1">
                       <h3 className="font-bold text-gray-900 text-base leading-tight mb-1 line-clamp-2">{product.name}</h3>
                       {product.description && (
@@ -212,13 +189,27 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                         {product.min_order && (
                           <p className="text-xs text-gray-400 mb-3">الحد الأدنى: {product.min_order}</p>
                         )}
+
+                        {/* ✅ زر الكمبيوتر */}
                         <a href={buildWaUrl(product)} target="_blank" rel="noopener noreferrer"
                           onClick={(e) => { e.stopPropagation(); trackWhatsapp(product); }}
-                          className={`block w-full text-center text-white text-sm font-bold py-2.5 rounded-xl transition-colors ${
+                          className={`hidden md:block w-full text-center text-white text-sm font-bold py-2.5 rounded-xl transition-colors ${
                             product.in_stock === false
                               ? "bg-gray-300 cursor-not-allowed pointer-events-none"
                               : "bg-green-700 hover:bg-green-800"
                           }`}>
+                          {product.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
+                        </a>
+
+                        {/* ✅ زر الموبايل — بدون stopPropagation لضمان عمله على iOS */}
+                        <a href={buildWaUrl(product)} target="_blank" rel="noopener noreferrer"
+                          onClick={() => trackWhatsapp(product)}
+                          className={`md:hidden w-full text-center text-white text-sm font-bold py-3 rounded-xl transition-colors touch-manipulation ${
+                            product.in_stock === false
+                              ? "bg-gray-300 pointer-events-none"
+                              : "bg-green-700 active:bg-green-900"
+                          }`}
+                          style={{ WebkitTapHighlightColor: "transparent", display: "block" }}>
                           {product.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
                         </a>
                       </div>
