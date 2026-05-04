@@ -9,9 +9,7 @@ export const metadata: Metadata = {
   title: "منصة حاوية | توريد المواد الغذائية بالجملة للتجار والهايبرات والتموينات",
   description: "منصة حاوية: سوق الجملة الافتراضي يربط الموردين والمصانع مباشرة بتجار الجملة والتجزئة والهايبرات والتموينات في المملكة العربية السعودية. أسعار المصنع وتوريد يومي.",
   keywords: "توريد مواد غذائية, تجار جملة, تجار تجزئة, هايبر ماركت, تموينات, بقالة, توريد بالجملة, السعودية, B2B, منصة حاوية, موردين غذائيين, جدة, الرياض",
-  alternates: {
-    canonical: "https://www.hawiyasa.com",
-  },
+  alternates: { canonical: "https://www.hawiyasa.com" },
   openGraph: {
     title: "منصة حاوية | توريد المواد الغذائية بالجملة للتجار والهايبرات والتموينات",
     description: "سوق الجملة الافتراضي يربط الموردين بتجار الجملة والتجزئة والهايبرات والتموينات في السعودية.",
@@ -19,21 +17,24 @@ export const metadata: Metadata = {
     siteName: "منصة حاوية",
     locale: "ar_SA",
     type: "website",
-    images: [
-      {
-        url: "https://www.hawiyasa.com/logo.png",
-        width: 800,
-        height: 600,
-        alt: "منصة حاوية",
-      },
-    ],
+    images: [{ url: "https://www.hawiyasa.com/logo.png", width: 800, height: 600, alt: "منصة حاوية" }],
   },
 };
 
 export default async function HomePage() {
+  // ✅ جيب المنتجات العادية (بدون badge تصفية)
   const { data: latestProducts } = await supabase
     .from("products")
     .select("*")
+    .or("badge.is.null,badge.neq.تصفية")
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  // ✅ جيب منتجات التصفية
+  const { data: clearanceProducts } = await supabase
+    .from("products")
+    .select("*")
+    .eq("badge", "تصفية")
     .order("created_at", { ascending: false })
     .limit(6);
 
@@ -68,7 +69,10 @@ export default async function HomePage() {
       <h1 className="sr-only">
         منصة حاوية - سوق الجملة الافتراضي لتوريد المواد الغذائية لتجار الجملة والتجزئة والهايبرات والتموينات في المملكة العربية السعودية.
       </h1>
-      <HomeClient initialFeatured={latestProducts || []} />
+      <HomeClient
+        initialFeatured={latestProducts || []}
+        initialClearance={clearanceProducts || []}
+      />
     </>
   );
 }

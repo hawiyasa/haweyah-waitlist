@@ -14,66 +14,74 @@ interface Product {
   description?: string | null;
 }
 
-function FeaturedProducts({ products }: { products: Product[] }) {
+function ProductCard({ p }: { p: Product }) {
+  return (
+    <a href={`/products/${p.id}`} className="group block bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+      <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
+        {p.image_url ? (
+          <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+        ) : (
+          <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-lg">📦</div>
+        )}
+        {p.in_stock === false && (
+          <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">نفدت الكمية</span>
+        )}
+        {/* ✅ badge تصفية بلون برتقالي مميز */}
+        {p.badge === "تصفية" && (
+          <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">🏷️ تصفية</span>
+        )}
+      </div>
+      <div className="p-3">
+        <div className="text-xs text-gray-400 mb-1">{p.category}</div>
+        <div className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-1">{p.name}</div>
+        <div className="text-xs text-gray-400 mb-1">{p.unit}</div>
+        {p.min_order && <div className="text-xs text-orange-600 font-bold mb-1">الحد الأدنى: {p.min_order}</div>}
+        <div className="text-base font-extrabold text-green-700">{p.price} ﷼</div>
+      </div>
+    </a>
+  );
+}
+
+function FeaturedProducts({ products, emptyMsg }: { products: Product[]; emptyMsg: string }) {
   if (products.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
         <div className="text-5xl mb-3">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-gray-300">
             <rect width="18" height="18" x="3" y="3" rx="2" />
-            <path d="M3 9h18" />
-            <path d="M9 21V9" />
+            <path d="M3 9h18" /><path d="M9 21V9" />
           </svg>
         </div>
-        <p className="text-sm">لا توجد منتجات حالياً — ستظهر هنا بعد الإضافة من لوحة التحكم</p>
+        <p className="text-sm">{emptyMsg}</p>
       </div>
     );
   }
-
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {products.map((p) => (
-        <a href={`/products/${p.id}`} key={p.id} className="group block bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
-          <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
-            {p.image_url ? (
-              <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-            ) : (
-              <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-lg">
-                📦
-              </div>
-            )}
-            {p.in_stock === false && (
-              <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                نفدت الكمية
-              </span>
-            )}
-          </div>
-          <div className="p-3">
-            <div className="text-xs text-gray-400 mb-1">{p.category}</div>
-            <div className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-1">{p.name}</div>
-            <div className="text-xs text-gray-400 mb-1">{p.unit}</div>
-            {p.min_order && <div className="text-xs text-orange-600 font-bold mb-1">الحد الأدنى: {p.min_order}</div>}
-            <div className="text-base font-extrabold text-green-700">{p.price} ﷼</div>
-          </div>
-        </a>
-      ))}
+      {products.map((p) => <ProductCard key={p.id} p={p} />)}
     </div>
   );
 }
 
-export default function HomeClient({ initialFeatured }: { initialFeatured: Product[] }) {
+interface HomeClientProps {
+  initialFeatured: Product[];
+  initialClearance: Product[];
+}
+
+export default function HomeClient({ initialFeatured, initialClearance }: HomeClientProps) {
   const [userType, setUserType] = useState<"buyer" | "supplier">("buyer");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("home");
+  // ✅ تاب العروض: منتجات أو تصفية
+  const [offersTab, setOffersTab] = useState<"products" | "clearance">("products");
 
   useEffect(() => {
     if (window.location.search.includes("success=1")) {
       setSuccess(true);
       window.history.replaceState({}, document.title, window.location.pathname + "#join-form");
     }
-
     const onScroll = () => {
       setScrolled(window.scrollY > 10);
       const secs = ["home", "offers", "suppliers", "europe"];
@@ -84,7 +92,6 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
       });
       setActive(cur);
     };
-
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -105,20 +112,15 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
             <img src="/logo.png" alt="حاوية" width={38} height={38} className="object-contain" />
             <span className="text-2xl font-extrabold text-green-800 tracking-tight">حاوية</span>
           </a>
-          <a href="#join-form" className="bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg">
-            سجّل الآن
-          </a>
+          <a href="#join-form" className="bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg">سجّل الآن</a>
         </div>
         <div className="max-w-5xl mx-auto px-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="flex min-w-max">
             {sections.map((s) => (
-              <a
-                key={s.id}
-                href={`#${s.id}`}
+              <a key={s.id} href={`#${s.id}`}
                 className={`px-4 py-3 text-sm font-bold text-center border-b-2 transition-all whitespace-nowrap ${
                   active === s.id ? "text-green-700 border-green-700" : "text-gray-500 border-transparent"
-                }`}
-              >
+                }`}>
                 {s.label}
               </a>
             ))}
@@ -133,17 +135,13 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
               اكبر شبكة موردين بالقطاع الغذائي في مكان واحد
             </span>
             <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-5">
-              سوق الجملة الافتراضي
-              <br />
+              سوق الجملة الافتراضي<br />
               الأكبر لقطاع <span className="text-green-700">الأغذية</span>
             </h1>
             <p className="text-gray-500 text-lg leading-relaxed mb-8">
-              نربط المصانع والموردين مباشرة مع تجار الجملة والتجزئة والمطاعم.
-              <br />
+              نربط المصانع والموردين مباشرة مع تجار الجملة والتجزئة والمطاعم.<br />
               أسعار المصنع، عروض تصفية، وتوريد يومي في مكان واحد.
             </p>
-
-            {/* ✅ مزايا للشركات */}
             <div className="flex flex-col gap-3 mb-8">
               {[
                 "✅ تواصل مباشر مع الموردين بدون وسطاء",
@@ -153,7 +151,6 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
                 <div key={f} className="flex items-center gap-2 text-sm text-gray-700 font-medium">{f}</div>
               ))}
             </div>
-
             <div className="flex gap-8">
               {[
                 { n: "+500", l: "منتج جملة" },
@@ -185,14 +182,11 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
               </div>
             ) : (
               <>
-                {/* ✅ عنوان جديد */}
                 <h2 className="text-center font-bold text-gray-900 mb-1">ابدأ التوريد — سجّل مؤسستك</h2>
                 <p className="text-center text-xs text-gray-400 mb-5">سجّل الآن لتكون من أوائل المستفيدين فور الإطلاق</p>
                 <form action="/api/waitlist" method="POST" className="space-y-4" onSubmit={() => setLoading(true)}>
                   <div className="mb-5">
-                    <label className="block text-xs font-bold text-gray-700 mb-2">
-                      نوع الحساب <span className="text-red-500">*</span>
-                    </label>
+                    <label className="block text-xs font-bold text-gray-700 mb-2">نوع الحساب <span className="text-red-500">*</span></label>
                     <select name="userType" value={userType} onChange={(e) => setUserType(e.target.value as "buyer" | "supplier")}
                       className="w-full px-3 py-3 border border-gray-300 rounded-lg text-[16px] bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none">
                       <option value="buyer">مشتري / تاجر</option>
@@ -222,7 +216,6 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
                       <input name="phone" required dir="ltr" placeholder="05XXXXXXXX" type="tel"
                         className="px-3 py-3 border border-gray-300 rounded-lg text-[16px] focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-right" />
                     </div>
-                    {/* ✅ حقل نوع النشاط الجديد */}
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-gray-700">نوع النشاط <span className="text-red-500">*</span></label>
                       <select name="businessType" required
@@ -247,9 +240,10 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
         </div>
       </section>
 
+      {/* ✅ قسم العروض مع التابز */}
       <section id="offers" className="py-20 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-end justify-between mb-10">
+          <div className="flex items-end justify-between mb-8">
             <div>
               <p className="text-xs font-bold tracking-widest text-green-700 uppercase mb-2">عروض اليوم</p>
               <h2 className="text-3xl font-extrabold text-gray-900">العروض والمنتجات الحالية</h2>
@@ -259,10 +253,53 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
               مشاهدة الكل ←
             </a>
           </div>
-          <FeaturedProducts products={initialFeatured} />
+
+          {/* ✅ التابز */}
+          <div className="flex gap-2 mb-6">
+            <button
+              type="button"
+              onClick={() => setOffersTab("products")}
+              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
+                offersTab === "products"
+                  ? "bg-green-700 text-white shadow-sm"
+                  : "bg-white border border-gray-200 text-gray-600 hover:border-green-500 hover:text-green-700"
+              }`}
+            >
+              📦 المنتجات
+            </button>
+            <button
+              type="button"
+              onClick={() => setOffersTab("clearance")}
+              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
+                offersTab === "clearance"
+                  ? "bg-orange-500 text-white shadow-sm"
+                  : "bg-white border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600"
+              }`}
+            >
+              🏷️ تصفية وستوكات
+            </button>
+          </div>
+
+          {offersTab === "products" ? (
+            <FeaturedProducts
+              products={initialFeatured}
+              emptyMsg="لا توجد منتجات حالياً — ستظهر هنا بعد الإضافة من لوحة التحكم"
+            />
+          ) : (
+            <FeaturedProducts
+              products={initialClearance}
+              emptyMsg="لا توجد منتجات تصفية حالياً — أضف منتجاً وضع badge = تصفية"
+            />
+          )}
+
           <div className="text-center mt-8">
-            <a href="/products" className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-md">
-              مشاهدة جميع المنتجات ←
+            <a
+              href={offersTab === "clearance" ? "/products?tab=clearance" : "/products"}
+              className={`inline-flex items-center gap-2 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-md ${
+                offersTab === "clearance" ? "bg-orange-500 hover:bg-orange-600" : "bg-green-700 hover:bg-green-800"
+              }`}
+            >
+              {offersTab === "clearance" ? "مشاهدة كل التصفية ←" : "مشاهدة جميع المنتجات ←"}
             </a>
           </div>
         </div>
@@ -288,14 +325,11 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20 overflow-y-auto">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
               </div>
               <h3 className="text-lg md:text-xl font-extrabold text-gray-900 mb-2">هذا القسم قيد التجهيز</h3>
-              <p className="text-gray-600 font-medium max-w-sm mx-auto text-sm leading-relaxed px-2">
-                نعمل على بناء شبكة موردين معتمدين للتوريد اليومي بأسعار المصنع لتجار التجزئة.
-              </p>
+              <p className="text-gray-600 font-medium max-w-sm mx-auto text-sm leading-relaxed px-2">نعمل على بناء شبكة موردين معتمدين للتوريد اليومي بأسعار المصنع لتجار التجزئة.</p>
               <span className="mt-4 bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full shrink-0">قريباً</span>
             </div>
           </div>
@@ -342,14 +376,11 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20 overflow-y-auto">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
               </div>
               <h3 className="text-lg md:text-xl font-extrabold text-gray-900 mb-2">هذا القسم قيد التجهيز</h3>
-              <p className="text-gray-600 font-medium max-w-sm mx-auto text-sm leading-relaxed px-2">
-                نعمل على بناء شبكة استيراد مباشرة من المصانع الأوروبية لضمان أفضل سعر وشهادات حلال معتمدة.
-              </p>
+              <p className="text-gray-600 font-medium max-w-sm mx-auto text-sm leading-relaxed px-2">نعمل على بناء شبكة استيراد مباشرة من المصانع الأوروبية لضمان أفضل سعر وشهادات حلال معتمدة.</p>
               <span className="mt-4 bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full shrink-0">قريباً</span>
             </div>
           </div>
@@ -364,9 +395,7 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
                 <img src="/logo.png" alt="حاوية" width={34} height={34} className="object-contain brightness-0 invert" />
                 <span className="text-2xl font-extrabold text-white tracking-tight">حاوية</span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار الجملة والتجزئة والمطاعم.
-              </p>
+              <p className="text-gray-400 text-sm leading-relaxed mb-6">سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية. نربط المصانع والموردين مباشرة بتجار الجملة والتجزئة والمطاعم.</p>
             </div>
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>
@@ -411,12 +440,8 @@ export default function HomeClient({ initialFeatured }: { initialFeatured: Produ
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-xs">
-              جميع الحقوق محفوظة © 2026 <strong className="text-gray-300 font-normal">منصة حاوية لتقنية المعلومات</strong>
-            </p>
-            <div className="flex gap-4 text-gray-500">
-              <span className="text-xs">المملكة العربية السعودية - جدة</span>
-            </div>
+            <p className="text-gray-500 text-xs">جميع الحقوق محفوظة © 2026 <strong className="text-gray-300 font-normal">منصة حاوية لتقنية المعلومات</strong></p>
+            <div className="flex gap-4 text-gray-500"><span className="text-xs">المملكة العربية السعودية - جدة</span></div>
           </div>
         </div>
       </footer>
