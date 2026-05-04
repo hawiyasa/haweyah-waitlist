@@ -26,19 +26,9 @@ function buildWaUrl(product: Product) {
 function ProductCard({ p }: { p: Product }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
-
-      {/* الصورة كلها رابط للمنتج */}
-      <a
-        href={`/products/${p.id}`}
-        className="block h-36 bg-gray-50 relative overflow-hidden flex-shrink-0"
-      >
+      <a href={`/products/${p.id}`} className="block h-36 bg-gray-50 relative overflow-hidden flex-shrink-0">
         {p.image_url ? (
-          <img
-            src={p.image_url}
-            alt={p.name}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
+          <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-3xl text-gray-300">📦</div>
         )}
@@ -49,23 +39,16 @@ function ProductCard({ p }: { p: Product }) {
           <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">🏷️ تصفية</span>
         )}
       </a>
-
-      {/* المحتوى */}
       <div className="p-3 flex flex-col flex-1">
         <div className="text-xs text-gray-400 mb-0.5">{p.category}</div>
-
-        {/* اسم المنتج رابط منفصل */}
         <a href={`/products/${p.id}`} className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-2 block">
           {p.name}
         </a>
-
         <div className="text-xs text-gray-400 mb-1">{p.unit}</div>
         {p.min_order && (
           <div className="text-xs text-orange-600 font-bold mb-1">الحد الأدنى: {p.min_order}</div>
         )}
         <div className="text-base font-extrabold text-green-700 mb-3">{p.price} ﷼</div>
-
-        {/* زر واتساب — a مستقل تماماً بدون أي JS أو parent clickable */}
         {p.in_stock === false ? (
           <div className="block w-full text-center text-white text-xs font-bold py-2.5 rounded-lg bg-gray-300 select-none">
             غير متوفر
@@ -104,15 +87,15 @@ function FeaturedProducts({ products, emptyMsg }: { products: Product[]; emptyMs
 interface HomeClientProps {
   initialFeatured: Product[];
   initialClearance: Product[];
+  offersTab?: "products" | "clearance";
 }
 
-export default function HomeClient({ initialFeatured, initialClearance }: HomeClientProps) {
+export default function HomeClient({ initialFeatured, initialClearance, offersTab = "products" }: HomeClientProps) {
   const [userType, setUserType] = useState<"buyer" | "supplier">("buyer");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("home");
-  const [offersTab, setOffersTab] = useState<"products" | "clearance">("products");
 
   useEffect(() => {
     if (window.location.search.includes("success=1")) {
@@ -144,7 +127,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
   return (
     <div dir="rtl" className="min-h-screen bg-white font-sans">
 
-      {/* Navbar */}
       <nav className={`sticky top-0 z-[100] bg-white border-b border-gray-200 ${scrolled ? "shadow-sm" : ""}`}>
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between border-b border-gray-100">
           <a href="#home" className="flex items-center gap-2.5">
@@ -167,7 +149,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
         </div>
       </nav>
 
-      {/* Hero */}
       <section id="home" className="min-h-[88vh] flex items-center bg-gradient-to-br from-white via-white to-green-50 px-6 py-20">
         <div className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
@@ -205,7 +186,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
             </div>
           </div>
 
-          {/* Form */}
           <div id="join-form" className="bg-white border border-gray-200 rounded-2xl p-8 shadow-xl">
             {success ? (
               <div className="text-center py-8 bg-green-50 rounded-xl">
@@ -285,7 +265,7 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
         </div>
       </section>
 
-      {/* العروض */}
+      {/* ✅ قسم العروض — التابات a href بدون JS */}
       <section id="offers" className="py-20 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-end justify-between mb-8">
@@ -298,24 +278,32 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
               مشاهدة الكل ←
             </a>
           </div>
+
+          {/* ✅ التابات — a href مثل زر اطلب الآن تماماً */}
           <div className="flex gap-2 mb-6">
-            <button type="button" onClick={() => setOffersTab("products")}
-              className={`px-5 py-2 rounded-xl text-sm font-bold ${
+            <a
+              href="/#offers"
+              className={`px-5 py-2 rounded-xl text-sm font-bold block text-center ${
                 offersTab === "products" ? "bg-green-700 text-white" : "bg-white border border-gray-200 text-gray-600"
-              }`}>
+              }`}
+            >
               📦 المنتجات
-            </button>
-            <button type="button" onClick={() => setOffersTab("clearance")}
-              className={`px-5 py-2 rounded-xl text-sm font-bold ${
+            </a>
+            <a
+              href="/?tab=clearance#offers"
+              className={`px-5 py-2 rounded-xl text-sm font-bold block text-center ${
                 offersTab === "clearance" ? "bg-orange-500 text-white" : "bg-white border border-gray-200 text-gray-600"
-              }`}>
+              }`}
+            >
               🏷️ تصفية وستوكات
-            </button>
+            </a>
           </div>
+
           {offersTab === "products"
             ? <FeaturedProducts products={initialFeatured} emptyMsg="لا توجد منتجات حالياً" />
             : <FeaturedProducts products={initialClearance} emptyMsg="لا توجد منتجات تصفية حالياً" />
           }
+
           <div className="text-center mt-8">
             <a
               href={offersTab === "clearance" ? "/products?tab=clearance" : "/products"}
@@ -328,7 +316,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
         </div>
       </section>
 
-      {/* الموردين */}
       <section id="suppliers" className="py-20 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <p className="text-xs font-bold tracking-widest text-green-700 uppercase mb-2">الموردون</p>
@@ -352,7 +339,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
         </div>
       </section>
 
-      {/* الاستيراد */}
       <section id="europe" className="py-20 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <p className="text-xs font-bold tracking-widest text-green-700 uppercase mb-2">الاستيراد الدولي</p>
@@ -374,7 +360,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="bg-gray-900 pt-16 pb-8">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">

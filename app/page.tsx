@@ -21,8 +21,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function HomePage() {
-  // ✅ جيب المنتجات العادية (بدون badge تصفية)
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab: tabParam } = await searchParams;
+  const offersTab = tabParam === "clearance" ? "clearance" : "products";
+
   const { data: latestProducts } = await supabase
     .from("products")
     .select("*")
@@ -30,7 +36,6 @@ export default async function HomePage() {
     .order("created_at", { ascending: false })
     .limit(6);
 
-  // ✅ جيب منتجات التصفية
   const { data: clearanceProducts } = await supabase
     .from("products")
     .select("*")
@@ -72,6 +77,7 @@ export default async function HomePage() {
       <HomeClient
         initialFeatured={latestProducts || []}
         initialClearance={clearanceProducts || []}
+        offersTab={offersTab}
       />
     </>
   );
