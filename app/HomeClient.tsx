@@ -23,37 +23,35 @@ function buildWaUrl(product: Product) {
   return `https://wa.me/${WHATSAPP}?text=${msg}`;
 }
 
-function trackWhatsapp(product: Product) {
-  // @ts-ignore
-  window.gtag?.("event", "whatsapp_click", {
-    product_id: product.id,
-    product_name: product.name,
-    product_category: product.category,
-    product_price: product.price,
-    page: "home",
-  });
-}
-
 function ProductCard({ p }: { p: Product }) {
+  function goToProduct() {
+    window.location.href = `/products/${p.id}`;
+  }
+
+  function openWhatsapp(e: React.MouseEvent) {
+    e.stopPropagation();
+    window.open(buildWaUrl(p), "_blank", "noopener,noreferrer");
+  }
+
   return (
-    <div className="relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
-
-      {/* رابط شفاف يغطي البطاقة كاملة */}
-      <a href={`/products/${p.id}`} className="absolute inset-0 z-0" aria-label={p.name} />
-
+    <div
+      onClick={goToProduct}
+      style={{ cursor: "pointer", WebkitTapHighlightColor: "rgba(0,0,0,0.05)" }}
+      className="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
+    >
       <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
         {p.image_url ? (
           <img src={p.image_url} alt={p.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy" />
         ) : (
-          <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-lg">📦</div>
+          <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-lg">📦</div>
         )}
         {p.in_stock === false && (
-          <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full z-10">نفدت الكمية</span>
+          <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">نفدت الكمية</span>
         )}
         {p.badge === "تصفية" && (
-          <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full z-10">🏷️ تصفية</span>
+          <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">🏷️ تصفية</span>
         )}
       </div>
 
@@ -64,21 +62,23 @@ function ProductCard({ p }: { p: Product }) {
         {p.min_order && <div className="text-xs text-orange-600 font-bold mb-1">الحد الأدنى: {p.min_order}</div>}
         <div className="text-base font-extrabold text-green-700 mb-3">{p.price} ﷼</div>
 
-        {p.in_stock === false ? (
-          <div className="relative z-10 block w-full text-center text-white text-xs font-bold py-2.5 rounded-lg bg-gray-300">
-            غير متوفر
-          </div>
-        ) : (
-          <a
-            href={buildWaUrl(p)}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => trackWhatsapp(p)}
-            className="relative z-10 block w-full text-center text-white text-xs font-bold py-2.5 rounded-lg bg-green-700 hover:bg-green-800 active:bg-green-900"
-          >
-            💬 اطلب الآن
-          </a>
-        )}
+        <button
+          type="button"
+          disabled={p.in_stock === false}
+          onClick={openWhatsapp}
+          style={{
+            WebkitTapHighlightColor: "transparent",
+            touchAction: "manipulation",
+            cursor: p.in_stock === false ? "not-allowed" : "pointer",
+          }}
+          className={`w-full text-white text-xs font-bold py-3 rounded-lg transition-colors ${
+            p.in_stock === false
+              ? "bg-gray-300"
+              : "bg-green-700 active:bg-green-900"
+          }`}
+        >
+          {p.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
+        </button>
       </div>
     </div>
   );
@@ -146,7 +146,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
   return (
     <div dir="rtl" className="min-h-screen bg-white font-sans">
 
-      {/* Navbar */}
       <nav className={`sticky top-0 z-[100] bg-white border-b border-gray-200 transition-shadow ${scrolled ? "shadow-sm" : ""}`}>
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between border-b border-gray-100">
           <a href="#home" className="flex items-center gap-2.5">
@@ -169,7 +168,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
         </div>
       </nav>
 
-      {/* Hero */}
       <section id="home" className="min-h-[88vh] flex items-center bg-gradient-to-br from-white via-white to-green-50 px-6 py-20">
         <div className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
@@ -207,7 +205,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
             </div>
           </div>
 
-          {/* Form */}
           <div id="join-form" className="bg-white border border-gray-200 rounded-2xl p-8 shadow-xl relative z-10">
             {success ? (
               <div className="text-center py-8 bg-green-50 rounded-xl">
@@ -283,7 +280,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
         </div>
       </section>
 
-      {/* قسم العروض */}
       <section id="offers" className="py-20 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-end justify-between mb-8">
@@ -326,7 +322,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
         </div>
       </section>
 
-      {/* الموردين */}
       <section id="suppliers" className="py-20 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="mb-10">
@@ -358,13 +353,12 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
         </div>
       </section>
 
-      {/* أوروبا */}
       <section id="europe" className="py-20 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <div className="mb-10">
             <p className="text-xs font-bold tracking-widest text-green-700 uppercase mb-3">الاستيراد الدولي</p>
             <h2 className="text-3xl font-extrabold text-gray-900 mb-2">استورد بأسعار المصنع مباشرة</h2>
-            <p className="text-gray-500">نربطك بكبار المصانع والموردين في أوروبا والشرق الأوسط. لا وسطاء، تسعير مباشر، وشحن منظم حتى باب مستودعك.</p>
+            <p className="text-gray-500">نربطك بكبار المصانع والموردين في أوروبا والشرق الأوسط.</p>
           </div>
           <div className="relative rounded-2xl overflow-hidden">
             <div className="blur-sm pointer-events-none select-none">
@@ -410,7 +404,6 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="bg-gray-900 pt-16 pb-8 border-t border-gray-800">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
