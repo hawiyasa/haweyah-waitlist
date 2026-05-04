@@ -36,10 +36,11 @@ function trackWhatsapp(product: Product) {
 
 function ProductCard({ p }: { p: Product }) {
   return (
-    <div
-      onClick={() => { window.location.href = `/products/${p.id}`; }}
-      className="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col"
-    >
+    <div className="relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+
+      {/* رابط شفاف يغطي البطاقة كاملة */}
+      <a href={`/products/${p.id}`} className="absolute inset-0 z-0" aria-label={p.name} />
+
       <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
         {p.image_url ? (
           <img src={p.image_url} alt={p.name}
@@ -49,10 +50,10 @@ function ProductCard({ p }: { p: Product }) {
           <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-lg">📦</div>
         )}
         {p.in_stock === false && (
-          <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">نفدت الكمية</span>
+          <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full z-10">نفدت الكمية</span>
         )}
         {p.badge === "تصفية" && (
-          <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">🏷️ تصفية</span>
+          <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full z-10">🏷️ تصفية</span>
         )}
       </div>
 
@@ -63,20 +64,21 @@ function ProductCard({ p }: { p: Product }) {
         {p.min_order && <div className="text-xs text-orange-600 font-bold mb-1">الحد الأدنى: {p.min_order}</div>}
         <div className="text-base font-extrabold text-green-700 mb-3">{p.price} ﷼</div>
 
-        <a
-          href={buildWaUrl(p)}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => { e.stopPropagation(); trackWhatsapp(p); }}
-          className={`block w-full text-center text-white text-xs font-bold py-2.5 rounded-lg touch-manipulation ${
-            p.in_stock === false
-              ? "bg-gray-300 pointer-events-none"
-              : "bg-green-700 hover:bg-green-800 active:bg-green-900"
-          }`}
-          style={{ WebkitTapHighlightColor: "transparent" }}
-        >
-          {p.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
-        </a>
+        {p.in_stock === false ? (
+          <div className="relative z-10 block w-full text-center text-white text-xs font-bold py-2.5 rounded-lg bg-gray-300">
+            غير متوفر
+          </div>
+        ) : (
+          <a
+            href={buildWaUrl(p)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackWhatsapp(p)}
+            className="relative z-10 block w-full text-center text-white text-xs font-bold py-2.5 rounded-lg bg-green-700 hover:bg-green-800 active:bg-green-900"
+          >
+            💬 اطلب الآن
+          </a>
+        )}
       </div>
     </div>
   );
@@ -417,7 +419,7 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
                 <img src="/logo.png" alt="حاوية" width={34} height={34} className="object-contain brightness-0 invert" />
                 <span className="text-2xl font-extrabold text-white tracking-tight">حاوية</span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6">سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية.</p>
+              <p className="text-gray-400 text-sm leading-relaxed">سوق الجملة الافتراضي لقطاع الأغذية في المملكة العربية السعودية.</p>
             </div>
             <div>
               <h4 className="text-white font-bold mb-4">المنصة</h4>

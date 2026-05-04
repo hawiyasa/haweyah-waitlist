@@ -161,9 +161,11 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 {filtered.map((product) => (
                   <div
                     key={product.id}
-                    onClick={() => { window.location.href = `/products/${product.id}`; }}
-                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col cursor-pointer group"
+                    className="relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col group"
                   >
+                    {/* رابط شفاف يغطي البطاقة كاملة */}
+                    <a href={`/products/${product.id}`} className="absolute inset-0 z-0" aria-label={product.name} />
+
                     <div className="h-48 bg-gray-50 flex items-center justify-center relative overflow-hidden">
                       {product.image_url ? (
                         <img src={product.image_url} alt={product.name}
@@ -173,13 +175,13 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                         <span className="text-5xl text-gray-200">📦</span>
                       )}
                       {product.in_stock === false && (
-                        <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">نفد</span>
+                        <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full z-10">نفد</span>
                       )}
                       {product.badge === "تصفية" && (
-                        <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">🏷️ تصفية</span>
+                        <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10">🏷️ تصفية</span>
                       )}
                       {product.category && (
-                        <span className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">{product.category}</span>
+                        <span className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full z-10">{product.category}</span>
                       )}
                     </div>
 
@@ -197,21 +199,21 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                           <p className="text-xs text-gray-400 mb-3">الحد الأدنى: {product.min_order}</p>
                         )}
 
-                        {/* ✅ زر واتساب — واحد يشتغل على الكل بما في ذلك iOS */}
-                        <a
-                          href={buildWaUrl(product)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => { e.stopPropagation(); trackWhatsapp(product); }}
-                          className={`block w-full text-center text-white text-sm font-bold py-3 rounded-xl touch-manipulation ${
-                            product.in_stock === false
-                              ? "bg-gray-300 pointer-events-none"
-                              : "bg-green-700 hover:bg-green-800 active:bg-green-900"
-                          }`}
-                          style={{ WebkitTapHighlightColor: "transparent" }}
-                        >
-                          {product.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
-                        </a>
+                        {product.in_stock === false ? (
+                          <div className="relative z-10 block w-full text-center text-white text-sm font-bold py-3 rounded-xl bg-gray-300">
+                            غير متوفر
+                          </div>
+                        ) : (
+                          <a
+                            href={buildWaUrl(product)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => trackWhatsapp(product)}
+                            className="relative z-10 block w-full text-center text-white text-sm font-bold py-3 rounded-xl bg-green-700 hover:bg-green-800 active:bg-green-900"
+                          >
+                            💬 اطلب الآن
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
