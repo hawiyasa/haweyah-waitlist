@@ -51,17 +51,6 @@ export default function ProductsClient({ products }: { products: Product[] }) {
     return `https://wa.me/${WHATSAPP}?text=${msg}`;
   }
 
-  function trackWhatsapp(product: Product) {
-    // @ts-ignore
-    window.gtag?.("event", "whatsapp_click", {
-      product_id: product.id,
-      product_name: product.name,
-      product_category: product.category,
-      product_price: product.price,
-      page: "products_list",
-    });
-  }
-
   function trackCategoryFilter(category: string) {
     // @ts-ignore
     window.gtag?.("event", "category_filter", { category_name: category });
@@ -88,13 +77,13 @@ export default function ProductsClient({ products }: { products: Product[] }) {
         <div className="max-w-7xl mx-auto px-6 flex gap-2 py-3">
           <button type="button" onClick={() => { setActiveTab("products"); setSelectedCat("الكل"); }}
             className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
-              activeTab === "products" ? "bg-green-700 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              activeTab === "products" ? "bg-green-700 text-white shadow-sm" : "bg-gray-100 text-gray-600"
             }`}>
             📦 المنتجات
           </button>
           <button type="button" onClick={() => { setActiveTab("clearance"); setSelectedCat("الكل"); }}
             className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
-              activeTab === "clearance" ? "bg-orange-500 text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              activeTab === "clearance" ? "bg-orange-500 text-white shadow-sm" : "bg-gray-100 text-gray-600"
             }`}>
             🏷️ تصفية وستوكات
           </button>
@@ -157,14 +146,13 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 {filtered.map((product) => (
                   <div
                     key={product.id}
-                    onClick={() => { window.location.href = `/products/${product.id}`; }}
-                    style={{ cursor: "pointer", WebkitTapHighlightColor: "rgba(0,0,0,0.05)" }}
-                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col group"
+                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm flex flex-col"
                   >
-                    <div className="h-48 bg-gray-50 flex items-center justify-center relative overflow-hidden">
+                    {/* صورة — تنقل لصفحة المنتج */}
+                    <a href={`/products/${product.id}`} className="block h-48 bg-gray-50 flex items-center justify-center relative overflow-hidden">
                       {product.image_url ? (
                         <img src={product.image_url} alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover"
                           loading="lazy" />
                       ) : (
                         <span className="text-5xl text-gray-200">📦</span>
@@ -178,10 +166,13 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                       {product.category && (
                         <span className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">{product.category}</span>
                       )}
-                    </div>
+                    </a>
 
                     <div className="p-5 flex flex-col flex-1">
-                      <h3 className="font-bold text-gray-900 text-base leading-tight mb-1 line-clamp-2">{product.name}</h3>
+                      {/* اسم المنتج — ينقل لصفحة المنتج */}
+                      <a href={`/products/${product.id}`} className="font-bold text-gray-900 text-base leading-tight mb-1 line-clamp-2 block">
+                        {product.name}
+                      </a>
                       {product.description && (
                         <p className="text-xs text-gray-400 line-clamp-2 mb-3">{product.description}</p>
                       )}
@@ -194,28 +185,21 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                           <p className="text-xs text-gray-400 mb-3">الحد الأدنى: {product.min_order}</p>
                         )}
 
-                        {/* ✅ button حقيقي + window.open — مضمون على iOS */}
-                        <button
-                          type="button"
-                          disabled={product.in_stock === false}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            trackWhatsapp(product);
-                            window.open(buildWaUrl(product), "_blank", "noopener,noreferrer");
-                          }}
-                          style={{
-                            WebkitTapHighlightColor: "transparent",
-                            touchAction: "manipulation",
-                            cursor: product.in_stock === false ? "not-allowed" : "pointer",
-                          }}
-                          className={`w-full text-white text-sm font-bold py-3 rounded-xl transition-colors ${
-                            product.in_stock === false
-                              ? "bg-gray-300"
-                              : "bg-green-700 active:bg-green-900"
-                          }`}
-                        >
-                          {product.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
-                        </button>
+                        {/* ✅ a مباشر بدون أي JS — مضمون iOS */}
+                        {product.in_stock === false ? (
+                          <span className="block w-full text-center text-white text-sm font-bold py-3 rounded-xl bg-gray-300">
+                            غير متوفر
+                          </span>
+                        ) : (
+                          <a
+                            href={buildWaUrl(product)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full text-center text-white text-sm font-bold py-3 rounded-xl bg-green-700"
+                          >
+                            💬 اطلب الآن
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -259,14 +243,14 @@ export default function ProductsClient({ products }: { products: Product[] }) {
               <ul className="space-y-3 text-sm text-gray-400">
                 <li className="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                   </svg>
                   <span dir="ltr">+966 53 518 9367</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="16" x="2" y="4" rx="2" />
-                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
                   </svg>
                   <span>info@hawiyasa.com</span>
                 </li>

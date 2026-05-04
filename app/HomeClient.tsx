@@ -24,25 +24,14 @@ function buildWaUrl(product: Product) {
 }
 
 function ProductCard({ p }: { p: Product }) {
-  function goToProduct() {
-    window.location.href = `/products/${p.id}`;
-  }
-
-  function openWhatsapp(e: React.MouseEvent) {
-    e.stopPropagation();
-    window.open(buildWaUrl(p), "_blank", "noopener,noreferrer");
-  }
-
   return (
-    <div
-      onClick={goToProduct}
-      style={{ cursor: "pointer", WebkitTapHighlightColor: "rgba(0,0,0,0.05)" }}
-      className="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
-    >
-      <div className="h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+
+      {/* صورة المنتج — تنقل لصفحة المنتج */}
+      <a href={`/products/${p.id}`} className="block h-36 bg-gray-50 flex items-center justify-center relative overflow-hidden">
         {p.image_url ? (
           <img src={p.image_url} alt={p.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover"
             loading="lazy" />
         ) : (
           <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-lg">📦</div>
@@ -53,32 +42,35 @@ function ProductCard({ p }: { p: Product }) {
         {p.badge === "تصفية" && (
           <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">🏷️ تصفية</span>
         )}
-      </div>
+      </a>
 
       <div className="p-3 flex flex-col flex-1">
         <div className="text-xs text-gray-400 mb-1">{p.category}</div>
-        <div className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-1">{p.name}</div>
+
+        {/* اسم المنتج — ينقل لصفحة المنتج */}
+        <a href={`/products/${p.id}`} className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-1 block">
+          {p.name}
+        </a>
+
         <div className="text-xs text-gray-400 mb-1">{p.unit}</div>
         {p.min_order && <div className="text-xs text-orange-600 font-bold mb-1">الحد الأدنى: {p.min_order}</div>}
         <div className="text-base font-extrabold text-green-700 mb-3">{p.price} ﷼</div>
 
-        <button
-          type="button"
-          disabled={p.in_stock === false}
-          onClick={openWhatsapp}
-          style={{
-            WebkitTapHighlightColor: "transparent",
-            touchAction: "manipulation",
-            cursor: p.in_stock === false ? "not-allowed" : "pointer",
-          }}
-          className={`w-full text-white text-xs font-bold py-3 rounded-lg transition-colors ${
-            p.in_stock === false
-              ? "bg-gray-300"
-              : "bg-green-700 active:bg-green-900"
-          }`}
-        >
-          {p.in_stock === false ? "غير متوفر" : "💬 اطلب الآن"}
-        </button>
+        {/* زر واتساب — a مباشر بدون JS */}
+        {p.in_stock === false ? (
+          <span className="block w-full text-center text-white text-xs font-bold py-2.5 rounded-lg bg-gray-300">
+            غير متوفر
+          </span>
+        ) : (
+          <a
+            href={buildWaUrl(p)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full text-center text-white text-xs font-bold py-2.5 rounded-lg bg-green-700"
+          >
+            💬 اطلب الآن
+          </a>
+        )}
       </div>
     </div>
   );
@@ -295,13 +287,13 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
           <div className="flex gap-2 mb-6">
             <button type="button" onClick={() => setOffersTab("products")}
               className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
-                offersTab === "products" ? "bg-green-700 text-white shadow-sm" : "bg-white border border-gray-200 text-gray-600 hover:border-green-500 hover:text-green-700"
+                offersTab === "products" ? "bg-green-700 text-white shadow-sm" : "bg-white border border-gray-200 text-gray-600"
               }`}>
               📦 المنتجات
             </button>
             <button type="button" onClick={() => setOffersTab("clearance")}
               className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
-                offersTab === "clearance" ? "bg-orange-500 text-white shadow-sm" : "bg-white border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600"
+                offersTab === "clearance" ? "bg-orange-500 text-white shadow-sm" : "bg-white border border-gray-200 text-gray-600"
               }`}>
               🏷️ تصفية وستوكات
             </button>
@@ -313,8 +305,8 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
           )}
           <div className="text-center mt-8">
             <a href={offersTab === "clearance" ? "/products?tab=clearance" : "/products"}
-              className={`inline-flex items-center gap-2 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-md ${
-                offersTab === "clearance" ? "bg-orange-500 hover:bg-orange-600" : "bg-green-700 hover:bg-green-800"
+              className={`inline-flex items-center gap-2 text-white font-bold px-8 py-3 rounded-xl shadow-md ${
+                offersTab === "clearance" ? "bg-orange-500" : "bg-green-700"
               }`}>
               {offersTab === "clearance" ? "مشاهدة كل التصفية ←" : "مشاهدة جميع المنتجات ←"}
             </a>
@@ -333,21 +325,15 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
             <div className="blur-md opacity-40 pointer-events-none grid grid-cols-3 gap-4 p-2">
               {["مصانع", "زراعي", "لحوم"].map((e, i) => (
                 <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                  <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-sm font-bold mb-3 text-gray-500">{e.substring(0, 1)}</div>
+                  <div className="w-10 h-10 rounded-full bg-gray-300 mb-3"></div>
                   <div className="h-3 bg-gray-300 rounded w-4/5 mb-2"></div>
                   <div className="h-2.5 bg-gray-200 rounded w-3/5"></div>
                 </div>
               ))}
             </div>
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </div>
-              <h3 className="text-lg md:text-xl font-extrabold text-gray-900 mb-2">هذا القسم قيد التجهيز</h3>
-              <p className="text-gray-600 font-medium max-w-sm mx-auto text-sm leading-relaxed">نعمل على بناء شبكة موردين معتمدين للتوريد اليومي بأسعار المصنع.</p>
-              <span className="mt-4 bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full">قريباً</span>
+              <h3 className="text-lg font-extrabold text-gray-900 mb-2">هذا القسم قيد التجهيز</h3>
+              <span className="mt-2 bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full">قريباً</span>
             </div>
           </div>
         </div>
@@ -361,44 +347,16 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
             <p className="text-gray-500">نربطك بكبار المصانع والموردين في أوروبا والشرق الأوسط.</p>
           </div>
           <div className="relative rounded-2xl overflow-hidden">
-            <div className="blur-sm pointer-events-none select-none">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-                <div className="space-y-4">
-                  {[
-                    { title: "تواصل مباشر مع المصنع", desc: "بدون وسطاء، تتفاوض مباشرة وتحصل على أفضل سعر" },
-                    { title: "شحن من الباب للباب", desc: "بحري أو جوي + جمارك + تسليم لمستودعك" },
-                    { title: "منتجات معتمدة حلال", desc: "شهادات الحلال المعتمدة للسوق السعودي" },
-                    { title: "أسعار تنافسية مضمونة", desc: "حجم الكونتينرات يتيح أسعاراً لا تجدها محلياً" },
-                  ].map((f) => (
-                    <div key={f.title} className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
-                        <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-900">{f.title}</h4>
-                        <p className="text-xs text-gray-500 mt-0.5">{f.desc}</p>
-                      </div>
-                    </div>
-                  ))}
+            <div className="blur-sm pointer-events-none select-none grid grid-cols-4 gap-3 p-4">
+              {["ألمانيا", "فرنسا", "هولندا", "إسبانيا", "بولندا", "إيطاليا", "تركيا", "مصر"].map((c) => (
+                <div key={c} className="bg-white border border-gray-200 rounded-xl p-3 text-center">
+                  <div className="text-xs font-bold text-gray-800">{c}</div>
                 </div>
-                <div className="grid grid-cols-4 gap-3">
-                  {["ألمانيا", "فرنسا", "هولندا", "إسبانيا", "بولندا", "إيطاليا", "تركيا", "مصر"].map((c) => (
-                    <div key={c} className="bg-white border border-gray-200 rounded-xl p-3 text-center shadow-sm">
-                      <div className="text-xs font-bold text-gray-800">{c}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-center p-4 bg-white/90 z-20">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </div>
-              <h3 className="text-lg md:text-xl font-extrabold text-gray-900 mb-2">هذا القسم قيد التجهيز</h3>
-              <p className="text-gray-600 font-medium max-w-sm mx-auto text-sm leading-relaxed">نعمل على بناء شبكة استيراد مباشرة من المصانع الأوروبية.</p>
-              <span className="mt-4 bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full">قريباً</span>
+              <h3 className="text-lg font-extrabold text-gray-900 mb-2">هذا القسم قيد التجهيز</h3>
+              <span className="mt-2 bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full">قريباً</span>
             </div>
           </div>
         </div>
@@ -437,14 +395,14 @@ export default function HomeClient({ initialFeatured, initialClearance }: HomeCl
               <ul className="space-y-3 text-sm text-gray-400">
                 <li className="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                   </svg>
                   <span dir="ltr">+966 53 518 9367</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="16" x="2" y="4" rx="2" />
-                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
                   </svg>
                   <span>info@hawiyasa.com</span>
                 </li>
