@@ -104,7 +104,7 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
     }
     const onScroll = () => {
       setScrolled(window.scrollY > 10);
-      const secs = ["home", "offers", "suppliers", "europe"];
+      const secs = ["home", "services", "offers", "suppliers", "europe"];
       let cur = "home";
       secs.forEach((id) => {
         const el = document.getElementById(id);
@@ -119,6 +119,7 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
 
   const sections = [
     { id: "home", label: "الرئيسية" },
+    { id: "services", label: "خدماتنا" },
     { id: "offers", label: "العروض والمنتجات" },
     { id: "suppliers", label: "الموردين والتوريد" },
     { id: "europe", label: "الاستيراد من أوروبا" },
@@ -265,7 +266,88 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
         </div>
       </section>
 
-      {/* ✅ قسم العروض — التابات a href بدون JS */}
+      {/* ✅ قسم الخدمات — جديد */}
+      <section id="services" className="py-20 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-12">
+            <p className="text-xs font-bold tracking-widest text-green-700 uppercase mb-2">ما نقدمه</p>
+            <h2 className="text-3xl font-extrabold text-gray-900">خدماتنا</h2>
+            <p className="text-gray-500 mt-2 max-w-xl">
+              منصة حاوية تجمع كل ما يحتاجه تاجر الجملة والتجزئة في مكان واحد.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div className="border border-gray-200 rounded-2xl p-7 flex flex-col gap-4 hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#01696f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/>
+                  <path d="M16.5 9.4 7.55 4.24"/>
+                  <polyline points="3.29 7 12 12 20.71 7"/>
+                  <line x1="12" y1="22" x2="12" y2="12"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-gray-900 mb-2">العروض والمنتجات</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  تصفح مئات المنتجات الغذائية والمنظفات المتاحة بأسعار الجملة من موردين وشركات معتمدة، مع إمكانية الطلب المباشر بدون وسيط.
+                </p>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-2xl p-7 flex flex-col gap-4 hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#da7101" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                  <line x1="7" y1="7" x2="7.01" y2="7"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-gray-900 mb-2">التصفية والستوكات</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  فرص شراء حصرية على دفعات وستوكات الشركات والمصانع بأسعار تنافسية، مناسبة للتجار الباحثين عن هامش ربح أعلى.
+                </p>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-2xl p-7 flex flex-col gap-4 hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#006494" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-gray-900 mb-2">الاستيراد والتصدير من المصانع</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  نربطك مباشرة بالمصانع والموردين في أوروبا وتركيا والشرق الأوسط للاستيراد بسعر المصنع، أو لتصدير منتجاتك للأسواق الخارجية.
+                </p>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-2xl p-7 flex flex-col gap-4 hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#01696f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-gray-900 mb-2">ربط التجار بالموردين للتوريد اليومي</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  نوصّل تجار الجملة والتجزئة بالموردين والشركات للتعاقد على التوريد المنتظم، مع عروض مخصصة وأسعار ثابتة لضمان استمرارية التشغيل.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* قسم العروض */}
       <section id="offers" className="py-20 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-end justify-between mb-8">
@@ -279,7 +361,6 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
             </a>
           </div>
 
-          {/* ✅ التابات — a href مثل زر اطلب الآن تماماً */}
           <div className="flex gap-2 mb-6">
             <a
               href="/#offers"
