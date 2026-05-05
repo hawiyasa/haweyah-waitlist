@@ -354,7 +354,7 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
             <div>
               <p className="text-xs font-bold tracking-widest text-green-700 uppercase mb-2">عروض اليوم</p>
               <h2 className="text-3xl font-extrabold text-gray-900">العروض والمنتجات الحالية</h2>
-              <p className="text-gray-500 mt-2">اطلب مباشرة عبر واتساب — بدون تسجيل</p>
+              <p className="text-gray-500 mt-2"> اطلب مباشر الان </p>
             </div>
             <a href="/products" className="hidden md:flex items-center gap-1 text-green-700 font-bold text-sm hover:underline shrink-0">
               مشاهدة الكل ←
