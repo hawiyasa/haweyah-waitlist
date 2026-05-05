@@ -19,24 +19,32 @@ interface Product {
   description?: string | null
   min_order?: string | null
   in_stock?: boolean | null
+  // حقول المورد — سرية
+  supplier_name?: string | null
+  supplier_phone?: string | null
+  supplier_city?: string | null
+  supplier_district?: string | null
+  cost_price?: string | number | null
 }
 
 const EMPTY = {
   name: "", category: CATEGORIES[0], price: "", unit: "",
-  image_url: "", badge: "", description: "", min_order: "", in_stock: true
+  image_url: "", badge: "", description: "", min_order: "", in_stock: true,
+  supplier_name: "", supplier_phone: "", supplier_city: "", supplier_district: "", cost_price: ""
 }
 
 export default function Dashboard() {
-  const [authed,      setAuthed]    = useState(false)
-  const [pass,        setPass]      = useState("")
-  const [products,    setProducts]  = useState<Product[]>([])
-  const [loading,     setLoading]   = useState(false)
-  const [uploading,   setUploading] = useState(false)
-  const [showForm,    setShowForm]  = useState(false)
-  const [editing,     setEditing]   = useState<Product | null>(null)
-  const [form,        setForm]      = useState(EMPTY)
-  const [aiLoading,   setAiLoading] = useState(false)
-  const [charCount,   setCharCount] = useState(0)
+  const [authed,     setAuthed]    = useState(false)
+  const [pass,       setPass]      = useState("")
+  const [products,   setProducts]  = useState<Product[]>([])
+  const [loading,    setLoading]   = useState(false)
+  const [uploading,  setUploading] = useState(false)
+  const [showForm,   setShowForm]  = useState(false)
+  const [editing,    setEditing]   = useState<Product | null>(null)
+  const [form,       setForm]      = useState(EMPTY)
+  const [aiLoading,  setAiLoading] = useState(false)
+  const [charCount,  setCharCount] = useState(0)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { if (authed) fetchProducts() }, [authed])
@@ -55,7 +63,7 @@ export default function Dashboard() {
     pass === PASS ? setAuthed(true) : alert("كلمة المرور غير صحيحة")
   }
 
-  const openAdd  = () => { setEditing(null); setForm(EMPTY); setShowForm(true) }
+  const openAdd = () => { setEditing(null); setForm(EMPTY); setShowForm(true) }
   const openEdit = (p: Product) => {
     setEditing(p)
     setForm({
@@ -63,40 +71,28 @@ export default function Dashboard() {
       price: String(p.price), unit: p.unit,
       image_url: p.image_url || "", badge: p.badge || "",
       description: p.description || "", min_order: p.min_order || "",
-      in_stock: p.in_stock ?? true
+      in_stock: p.in_stock ?? true,
+      supplier_name: p.supplier_name || "",
+      supplier_phone: p.supplier_phone || "",
+      supplier_city: p.supplier_city || "",
+      supplier_district: p.supplier_district || "",
+      cost_price: p.cost_price ? String(p.cost_price) : "",
     })
     setShowForm(true)
   }
 
-  // ✅ توليد الوصف بالذكاء الاصطناعي
   async function generateDescription() {
-    if (!form.name) {
-      alert("يرجى إدخال اسم المنتج أولاً")
-      return
-    }
+    if (!form.name) { alert("يرجى إدخال اسم المنتج أولاً"); return }
     setAiLoading(true)
     try {
       const res = await fetch("/api/generate-description", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name:     form.name     || "",
-          category: form.category || "",
-          price:    form.price    || "0",
-          unit:     form.unit     || "",
-        }),
+        body: JSON.stringify({ name: form.name, category: form.category, price: form.price, unit: form.unit }),
       })
-      
-      if (!res.ok) {
-        const err = await res.json()
-        alert(`خطأ: ${err.error || "حاول مرة أخرى"}`)
-        return
-      }
-  
+      if (!res.ok) { const err = await res.json(); alert(`خطأ: ${err.error || "حاول مرة أخرى"}`); return }
       const data = await res.json()
-      if (data.description) {
-        setForm(f => ({ ...f, description: data.description }))
-      }
+      if (data.description) setForm(f => ({ ...f, description: data.description }))
     } catch (e) {
       alert(`خطأ في الاتصال: ${e instanceof Error ? e.message : "تحقق من الاتصال"}`)
     }
@@ -127,15 +123,20 @@ export default function Dashboard() {
     e.preventDefault()
     const tempId = editing ? editing.id : `temp-${Date.now()}`
     const payload = {
-      name:        form.name,
-      category:    form.category,
-      price:       parseFloat(String(form.price)),
-      unit:        form.unit,
-      image_url:   form.image_url   || null,
-      badge:       form.badge       || null,
-      description: form.description || null,
-      min_order:   form.min_order   || null,
-      in_stock:    form.in_stock ?? true,
+      name:              form.name,
+      category:          form.category,
+      price:             parseFloat(String(form.price)),
+      unit:              form.unit,
+      image_url:         form.image_url || null,
+      badge:             form.badge || null,
+      description:       form.description || null,
+      min_order:         form.min_order || null,
+      in_stock:          form.in_stock ?? true,
+      supplier_name:     form.supplier_name || null,
+      supplier_phone:    form.supplier_phone || null,
+      supplier_city:     form.supplier_city || null,
+      supplier_district: form.supplier_district || null,
+      cost_price:        form.cost_price ? parseFloat(String(form.cost_price)) : null,
     }
     const optimisticProduct = { id: tempId, ...payload }
     if (editing) {
@@ -148,9 +149,7 @@ export default function Dashboard() {
       await supabase.from("products").update(payload).eq("id", editing.id)
     } else {
       const { data, error } = await supabase.from("products").insert([payload]).select().single()
-      if (!error && data) {
-        setProducts(prev => prev.map(p => p.id === tempId ? data : p))
-      }
+      if (!error && data) setProducts(prev => prev.map(p => p.id === tempId ? data : p))
     }
   }
 
@@ -160,7 +159,14 @@ export default function Dashboard() {
     await supabase.from("products").delete().eq("id", id)
   }
 
-  /* ───── Login ───── */
+  const margin = (p: Product) => {
+    if (!p.cost_price || !p.price) return null
+    const sell = parseFloat(String(p.price))
+    const cost = parseFloat(String(p.cost_price))
+    return Math.round(((sell - cost) / sell) * 100)
+  }
+
+  /* ── Login ── */
   if (!authed) return (
     <div dir="rtl" className="min-h-screen bg-gray-100 flex items-center justify-center font-sans">
       <div className="bg-white rounded-2xl p-8 shadow-lg w-80">
@@ -179,7 +185,7 @@ export default function Dashboard() {
     </div>
   )
 
-  /* ───── Dashboard ───── */
+  /* ── Dashboard ── */
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 font-sans">
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
@@ -193,7 +199,7 @@ export default function Dashboard() {
         </button>
       </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-8">
         {loading ? (
           <div className="text-center py-24 text-gray-400">
             <div className="text-5xl mb-4 animate-spin">⏳</div>
@@ -216,36 +222,118 @@ export default function Dashboard() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    {["الصورة","المنتج","القسم","السعر","أقل طلب","البادج",""].map(h => (
-                      <th key={h} className="text-right px-4 py-3 font-bold text-gray-700">{h}</th>
+                    {["الصورة","المنتج","القسم","سعر البيع","التكلفة","الهامش","البادج","المورد",""].map(h => (
+                      <th key={h} className="text-right px-4 py-3 font-bold text-gray-700 whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {products.map(p => (
-                    <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        {p.image_url
-                          ? <img src={p.image_url} alt={p.name} className="w-12 h-12 object-cover rounded-lg" />
-                          : <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">لا صورة</div>
-                        }
-                      </td>
-                      <td className="px-4 py-3 font-medium text-gray-900">{p.name}</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{p.category}</td>
-                      <td className="px-4 py-3 font-bold text-green-700">{p.price} ﷼</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{p.min_order || "—"}</td>
-                      <td className="px-4 py-3">
-                        {p.badge && (
-                          <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">{p.badge}</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-3">
-                          <button onClick={() => openEdit(p)} className="text-blue-600 hover:underline text-xs font-bold">تعديل</button>
-                          <button onClick={() => del(p.id)} className="text-red-500 hover:underline text-xs font-bold">حذف</button>
-                        </div>
-                      </td>
-                    </tr>
+                    <>
+                      <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          {p.image_url
+                            ? <img src={p.image_url} alt={p.name} className="w-12 h-12 object-cover rounded-lg" />
+                            : <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">لا صورة</div>
+                          }
+                        </td>
+                        <td className="px-4 py-3 font-medium text-gray-900">{p.name}</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs">{p.category}</td>
+                        <td className="px-4 py-3 font-bold text-green-700">{p.price} ﷼</td>
+
+                        {/* التكلفة */}
+                        <td className="px-4 py-3 text-orange-600 font-bold text-xs">
+                          {p.cost_price ? `${p.cost_price} ﷼` : <span className="text-gray-300">—</span>}
+                        </td>
+
+                        {/* الهامش */}
+                        <td className="px-4 py-3">
+                          {margin(p) !== null ? (
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                              margin(p)! >= 20 ? "bg-green-100 text-green-700" :
+                              margin(p)! >= 10 ? "bg-yellow-100 text-yellow-700" :
+                              "bg-red-100 text-red-600"
+                            }`}>
+                              {margin(p)}%
+                            </span>
+                          ) : <span className="text-gray-300 text-xs">—</span>}
+                        </td>
+
+                        <td className="px-4 py-3">
+                          {p.badge && (
+                            <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">{p.badge}</span>
+                          )}
+                        </td>
+
+                        {/* المورد — اسم + زر تفاصيل */}
+                        <td className="px-4 py-3">
+                          {p.supplier_name ? (
+                            <button
+                              type="button"
+                              onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
+                              className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
+                            >
+                              {p.supplier_name}
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                                style={{ transform: expandedId === p.id ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
+                                <polyline points="6 9 12 15 18 9"/>
+                              </svg>
+                            </button>
+                          ) : (
+                            <span className="text-gray-300 text-xs">—</span>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <div className="flex gap-3">
+                            <button onClick={() => openEdit(p)} className="text-blue-600 hover:underline text-xs font-bold">تعديل</button>
+                            <button onClick={() => del(p.id)} className="text-red-500 hover:underline text-xs font-bold">حذف</button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* صف تفاصيل المورد — يظهر عند الضغط */}
+                      {expandedId === p.id && (
+                        <tr key={`${p.id}-supplier`} className="bg-blue-50 border-b border-blue-100">
+                          <td colSpan={9} className="px-6 py-4">
+                            <div className="flex flex-wrap gap-6 text-sm">
+                              <div>
+                                <span className="text-xs text-gray-400 block mb-0.5">اسم المتجر / الشركة</span>
+                                <span className="font-bold text-gray-800">{p.supplier_name || "—"}</span>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-400 block mb-0.5">رقم المسؤول</span>
+                                <span className="font-bold text-gray-800" dir="ltr">{p.supplier_phone || "—"}</span>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-400 block mb-0.5">المدينة</span>
+                                <span className="font-bold text-gray-800">{p.supplier_city || "—"}</span>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-400 block mb-0.5">الحي</span>
+                                <span className="font-bold text-gray-800">{p.supplier_district || "—"}</span>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-400 block mb-0.5">سعر الشراء (التكلفة)</span>
+                                <span className="font-bold text-orange-600">{p.cost_price ? `${p.cost_price} ﷼` : "—"}</span>
+                              </div>
+                              {p.supplier_phone && (
+                                <div className="flex items-end">
+                                  <a
+                                    href={`https://wa.me/966${p.supplier_phone.replace(/^0/, "")}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg"
+                                  >
+                                    واتساب المورد
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   ))}
                 </tbody>
               </table>
@@ -254,7 +342,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ───── Modal ───── */}
+      {/* ── Modal ── */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -300,7 +388,7 @@ export default function Dashboard() {
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500" />
               </div>
 
-              {/* Grid fields */}
+              {/* Grid */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-gray-700 block mb-1">القسم *</label>
@@ -310,7 +398,7 @@ export default function Dashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">السعر (ريال) *</label>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">سعر البيع (ريال) *</label>
                   <input required type="number" value={form.price}
                     onChange={e => setForm({ ...form, price: e.target.value })}
                     placeholder="185"
@@ -339,7 +427,7 @@ export default function Dashboard() {
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-green-500" />
               </div>
 
-              {/* ✅ Description with AI Button */}
+              {/* Description */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-bold text-gray-700">
@@ -348,37 +436,18 @@ export default function Dashboard() {
                       {charCount}/160
                     </span>
                   </label>
-                  <button
-                    type="button"
-                    onClick={generateDescription}
-                    disabled={aiLoading}
-                    className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    {aiLoading ? (
-                      <>
-                        <span className="animate-spin inline-block">⏳</span>
-                        <span>جاري التوليد...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>✨</span>
-                        <span>توليد بالذكاء الاصطناعي</span>
-                      </>
-                    )}
+                  <button type="button" onClick={generateDescription} disabled={aiLoading}
+                    className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
+                    {aiLoading ? <><span className="animate-spin inline-block">⏳</span><span>جاري التوليد...</span></> : <><span>✨</span><span>توليد بالذكاء الاصطناعي</span></>}
                   </button>
                 </div>
-                <textarea
-                  value={form.description}
+                <textarea value={form.description}
                   onChange={e => setForm({ ...form, description: e.target.value })}
                   placeholder="اضغط ✨ للتوليد التلقائي، أو اكتب وصفاً يظهر في نتائج قوقل (120-160 حرف مثالي)"
-                  rows={3}
-                  maxLength={200}
-                  className={`w-full px-3 py-2.5 border rounded-lg text-sm outline-none focus:border-purple-500 resize-none ${
-                    charCount > 160 ? "border-red-400 bg-red-50" : "border-gray-300"
-                  }`}
-                />
+                  rows={3} maxLength={200}
+                  className={`w-full px-3 py-2.5 border rounded-lg text-sm outline-none focus:border-purple-500 resize-none ${charCount > 160 ? "border-red-400 bg-red-50" : "border-gray-300"}`} />
                 <p className="text-xs text-gray-400 mt-1">
-                  💡 هذا الوصف يظهر في نتائج قوقل أسفل اسم الصفحة — كلما كان أدق كلما كان أعلى بالبحث
+                  💡 هذا الوصف يظهر في نتائج قوقل أسفل اسم الصفحة
                 </p>
               </div>
 
@@ -388,6 +457,52 @@ export default function Dashboard() {
                   onChange={e => setForm({ ...form, in_stock: e.target.checked })}
                   className="w-4 h-4 accent-green-700" />
                 <label htmlFor="in_stock" className="text-sm font-medium text-gray-700">المنتج متوفر</label>
+              </div>
+
+              {/* ✅ قسم المورد — سري */}
+              <div className="border-t border-dashed border-gray-200 pt-4 mt-2">
+                <p className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-3">
+                  معلومات المورد — سرية (للمرجع فقط)
+                </p>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1">اسم المتجر / الشركة</label>
+                      <input value={form.supplier_name}
+                        onChange={e => setForm({ ...form, supplier_name: e.target.value })}
+                        placeholder="مؤسسة الأمل"
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1">رقم المسؤول</label>
+                      <input value={form.supplier_phone} dir="ltr"
+                        onChange={e => setForm({ ...form, supplier_phone: e.target.value })}
+                        placeholder="05XXXXXXXX" type="tel"
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500 text-right" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1">المدينة</label>
+                      <input value={form.supplier_city}
+                        onChange={e => setForm({ ...form, supplier_city: e.target.value })}
+                        placeholder="جدة"
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1">الحي</label>
+                      <input value={form.supplier_district}
+                        onChange={e => setForm({ ...form, supplier_district: e.target.value })}
+                        placeholder="حي الصناعية"
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 block mb-1">سعر الشراء — التكلفة (ريال)</label>
+                    <input value={form.cost_price} type="number"
+                      onChange={e => setForm({ ...form, cost_price: e.target.value })}
+                      placeholder="150"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500" />
+                  </div>
+                </div>
               </div>
 
               {/* Buttons */}
