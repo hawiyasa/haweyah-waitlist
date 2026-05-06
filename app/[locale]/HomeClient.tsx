@@ -26,11 +26,11 @@ function buildWaUrl(product: Product, msg: string) {
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
 }
 
-function ProductCard({ p }: { p: Product }) {
+function ProductCard({ p, locale }: { p: Product; locale: string }) {
   const t = useTranslations("card");
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
-      <a href={`/products/${p.id}`} className="block h-36 bg-gray-50 relative overflow-hidden flex-shrink-0">
+      <a href={`/${locale}/products/${p.id}`} className="block h-36 bg-gray-50 relative overflow-hidden flex-shrink-0">
         {p.image_url ? (
           <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
@@ -49,7 +49,7 @@ function ProductCard({ p }: { p: Product }) {
       </a>
       <div className="p-3 flex flex-col flex-1">
         <div className="text-xs text-gray-400 mb-0.5">{p.category}</div>
-        <a href={`/products/${p.id}`} className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-2 block">
+        <a href={`/${locale}/products/${p.id}`} className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-2 block">
           {p.name}
         </a>
         <div className="text-xs text-gray-400 mb-1">{p.unit}</div>
@@ -76,7 +76,15 @@ function ProductCard({ p }: { p: Product }) {
   );
 }
 
-function FeaturedProducts({ products, emptyMsg }: { products: Product[]; emptyMsg: string }) {
+function FeaturedProducts({
+  products,
+  emptyMsg,
+  locale,
+}: {
+  products: Product[];
+  emptyMsg: string;
+  locale: string;
+}) {
   if (products.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
@@ -87,7 +95,9 @@ function FeaturedProducts({ products, emptyMsg }: { products: Product[]; emptyMs
   }
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {products.map((p) => <ProductCard key={p.id} p={p} />)}
+      {products.map((p) => (
+        <ProductCard key={p.id} p={p} locale={locale} />
+      ))}
     </div>
   );
 }
@@ -99,7 +109,12 @@ interface HomeClientProps {
   locale: string;
 }
 
-export default function HomeClient({ initialFeatured, initialClearance, offersTab = "products", locale }: HomeClientProps) {
+export default function HomeClient({
+  initialFeatured,
+  initialClearance,
+  offersTab = "products",
+  locale,
+}: HomeClientProps) {
   const tNav = useTranslations("nav");
   const tHero = useTranslations("hero");
   const tForm = useTranslations("form");
@@ -160,7 +175,7 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
       {/* ═══ NAVBAR ═══ */}
       <nav className={`sticky top-0 z-[100] bg-white border-b border-gray-200 ${scrolled ? "shadow-sm" : ""}`}>
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between border-b border-gray-100">
-          <a href="#home" className="flex items-center gap-2.5">
+          <a href={`/${locale}`} className="flex items-center gap-2.5">
             <img src="/logo.png" alt="حاوية" width={38} height={38} className="object-contain" />
             <span className="text-2xl font-extrabold text-green-800 tracking-tight">حاوية</span>
           </a>
@@ -171,7 +186,10 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
             >
               🌐 {locale === "ar" ? "English" : "العربية"}
             </button>
-            <a href="#join-form" className="bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg">
+            <a
+              href="#join-form"
+              className="bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg"
+            >
               {tNav("join")}
             </a>
           </div>
@@ -179,10 +197,15 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
         <div className="max-w-5xl mx-auto px-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="flex min-w-max">
             {sections.map((s) => (
-              <a key={s.id} href={`#${s.id}`}
+              <a
+                key={s.id}
+                href={`#${s.id}`}
                 className={`px-4 py-3 text-sm font-bold border-b-2 whitespace-nowrap ${
-                  active === s.id ? "text-green-700 border-green-700" : "text-gray-500 border-transparent"
-                }`}>
+                  active === s.id
+                    ? "text-green-700 border-green-700"
+                    : "text-gray-500 border-transparent"
+                }`}
+              >
                 {s.label}
               </a>
             ))}
@@ -234,7 +257,11 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
                 </div>
                 <h3 className="text-lg font-bold text-green-800 mb-2">{tForm("successTitle")}</h3>
                 <p className="text-sm text-gray-500 mb-4">{tForm("successBody")}</p>
-                <button type="button" onClick={() => setSuccess(false)} className="bg-green-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setSuccess(false)}
+                  className="bg-green-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg"
+                >
                   {tForm("successBtn")}
                 </button>
               </div>
@@ -242,41 +269,89 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
               <>
                 <h2 className="text-center font-bold text-gray-900 mb-1">{tForm("title")}</h2>
                 <p className="text-center text-xs text-gray-400 mb-5">{tForm("subtitle")}</p>
-                <form action="/api/waitlist" method="POST" className="space-y-4" onSubmit={() => setLoading(true)}>
+                <form
+                  action="/api/waitlist"
+                  method="POST"
+                  className="space-y-4"
+                  onSubmit={() => setLoading(true)}
+                >
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-2">{tForm("accountType")} <span className="text-red-500">*</span></label>
-                    <select name="userType" value={userType} onChange={(e) => setUserType(e.target.value as "buyer" | "supplier")}
-                      className="w-full px-3 py-3 border border-gray-300 rounded-lg bg-white focus:border-green-500 outline-none" style={{ fontSize: "16px" }}>
+                    <label className="block text-xs font-bold text-gray-700 mb-2">
+                      {tForm("accountType")} <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="userType"
+                      value={userType}
+                      onChange={(e) => setUserType(e.target.value as "buyer" | "supplier")}
+                      className="w-full px-3 py-3 border border-gray-300 rounded-lg bg-white focus:border-green-500 outline-none"
+                      style={{ fontSize: "16px" }}
+                    >
                       <option value="buyer">{tForm("buyer")}</option>
                       <option value="supplier">{tForm("supplier")}</option>
                     </select>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-700">{tForm("company")} <span className="text-red-500">*</span></label>
-                      <input name="company" required placeholder={tForm("companyPlaceholder")}
-                        className="px-3 py-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none" style={{ fontSize: "16px" }} />
+                      <label className="text-xs font-bold text-gray-700">
+                        {tForm("company")} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        name="company"
+                        required
+                        placeholder={tForm("companyPlaceholder")}
+                        className="px-3 py-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none"
+                        style={{ fontSize: "16px" }}
+                      />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-700">{tForm("city")} <span className="text-red-500">*</span></label>
-                      <input name="city" required placeholder={tForm("cityPlaceholder")}
-                        className="px-3 py-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none" style={{ fontSize: "16px" }} />
+                      <label className="text-xs font-bold text-gray-700">
+                        {tForm("city")} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        name="city"
+                        required
+                        placeholder={tForm("cityPlaceholder")}
+                        className="px-3 py-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none"
+                        style={{ fontSize: "16px" }}
+                      />
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-700">{tForm("contactName")} <span className="text-red-500">*</span></label>
-                    <input name="name" required placeholder={tForm("contactPlaceholder")}
-                      className="px-3 py-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none" style={{ fontSize: "16px" }} />
+                    <label className="text-xs font-bold text-gray-700">
+                      {tForm("contactName")} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      name="name"
+                      required
+                      placeholder={tForm("contactPlaceholder")}
+                      className="px-3 py-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none"
+                      style={{ fontSize: "16px" }}
+                    />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-700">{tForm("phone")} <span className="text-red-500">*</span></label>
-                    <input name="phone" required dir="ltr" placeholder={tForm("phonePlaceholder")} type="tel"
-                      className="px-3 py-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none text-right" style={{ fontSize: "16px" }} />
+                    <label className="text-xs font-bold text-gray-700">
+                      {tForm("phone")} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      name="phone"
+                      required
+                      dir="ltr"
+                      placeholder={tForm("phonePlaceholder")}
+                      type="tel"
+                      className="px-3 py-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none text-right"
+                      style={{ fontSize: "16px" }}
+                    />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-700">{tForm("businessType")} <span className="text-red-500">*</span></label>
-                    <select name="businessType" required
-                      className="px-3 py-3 border border-gray-300 rounded-lg bg-white focus:border-green-500 outline-none" style={{ fontSize: "16px" }}>
+                    <label className="text-xs font-bold text-gray-700">
+                      {tForm("businessType")} <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="businessType"
+                      required
+                      className="px-3 py-3 border border-gray-300 rounded-lg bg-white focus:border-green-500 outline-none"
+                      style={{ fontSize: "16px" }}
+                    >
                       <option value="">{tForm("businessTypePlaceholder")}</option>
                       <option value="importer">{tForm("importer")}</option>
                       <option value="manufacturer">{tForm("manufacturer")}</option>
@@ -285,8 +360,11 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
                       <option value="retailer">{tForm("retailer")}</option>
                     </select>
                   </div>
-                  <button type="submit" disabled={loading}
-                    className="w-full bg-green-700 disabled:opacity-70 text-white font-bold py-3 rounded-lg shadow-md">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-green-700 disabled:opacity-70 text-white font-bold py-3 rounded-lg shadow-md"
+                  >
                     {loading ? tForm("submitting") : tForm("submit")}
                   </button>
                 </form>
@@ -309,7 +387,7 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
               { bg: "bg-green-50", stroke: "#01696f", title: tServices("s1title"), body: tServices("s1body") },
               { bg: "bg-orange-50", stroke: "#da7101", title: tServices("s2title"), body: tServices("s2body") },
               { bg: "bg-blue-50",   stroke: "#006494", title: tServices("s3title"), body: tServices("s3body") },
-              { bg: "bg-green-50", stroke: "#01696f", title: tServices("s4title"), body: tServices("s4body") },
+              { bg: "bg-green-50",  stroke: "#01696f", title: tServices("s4title"), body: tServices("s4body") },
             ].map((s, i) => (
               <div key={i} className="border border-gray-200 rounded-2xl p-7 flex flex-col gap-4 hover:shadow-md transition-shadow">
                 <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center flex-shrink-0`}>
@@ -334,25 +412,59 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
               <h2 className="text-3xl font-extrabold text-gray-900">{tOffers("title")}</h2>
               <p className="text-gray-500 mt-2">{tOffers("subtitle")}</p>
             </div>
-            <a href="/products" className="hidden md:flex items-center gap-1 text-green-700 font-bold text-sm hover:underline shrink-0">
+            <a
+              href={`/${locale}/products`}
+              className="hidden md:flex items-center gap-1 text-green-700 font-bold text-sm hover:underline shrink-0"
+            >
               {tOffers("viewAll")}
             </a>
           </div>
           <div className="flex gap-2 mb-6">
-            <a href="/#offers" className={`px-5 py-2 rounded-xl text-sm font-bold block text-center ${offersTab === "products" ? "bg-green-700 text-white" : "bg-white border border-gray-200 text-gray-600"}`}>
+            <a
+              href={`/${locale}#offers`}
+              className={`px-5 py-2 rounded-xl text-sm font-bold block text-center ${
+                offersTab === "products"
+                  ? "bg-green-700 text-white"
+                  : "bg-white border border-gray-200 text-gray-600"
+              }`}
+            >
               {tOffers("tabProducts")}
             </a>
-            <a href="/?tab=clearance#offers" className={`px-5 py-2 rounded-xl text-sm font-bold block text-center ${offersTab === "clearance" ? "bg-orange-500 text-white" : "bg-white border border-gray-200 text-gray-600"}`}>
+            <a
+              href={`/${locale}?tab=clearance#offers`}
+              className={`px-5 py-2 rounded-xl text-sm font-bold block text-center ${
+                offersTab === "clearance"
+                  ? "bg-orange-500 text-white"
+                  : "bg-white border border-gray-200 text-gray-600"
+              }`}
+            >
               {tOffers("tabClearance")}
             </a>
           </div>
-          {offersTab === "products"
-            ? <FeaturedProducts products={initialFeatured} emptyMsg={tOffers("emptyProducts")} />
-            : <FeaturedProducts products={initialClearance} emptyMsg={tOffers("emptyClearance")} />
-          }
+          {offersTab === "products" ? (
+            <FeaturedProducts
+              products={initialFeatured}
+              emptyMsg={tOffers("emptyProducts")}
+              locale={locale}
+            />
+          ) : (
+            <FeaturedProducts
+              products={initialClearance}
+              emptyMsg={tOffers("emptyClearance")}
+              locale={locale}
+            />
+          )}
           <div className="text-center mt-8">
-            <a href={offersTab === "clearance" ? "/products?tab=clearance" : "/products"}
-              className={`inline-flex items-center gap-2 text-white font-bold px-8 py-3 rounded-xl shadow-md ${offersTab === "clearance" ? "bg-orange-500" : "bg-green-700"}`}>
+            <a
+              href={
+                offersTab === "clearance"
+                  ? `/${locale}/products?tab=clearance`
+                  : `/${locale}/products`
+              }
+              className={`inline-flex items-center gap-2 text-white font-bold px-8 py-3 rounded-xl shadow-md ${
+                offersTab === "clearance" ? "bg-orange-500" : "bg-green-700"
+              }`}
+            >
               {offersTab === "clearance" ? tOffers("btnClearance") : tOffers("btnProducts")}
             </a>
           </div>
@@ -377,7 +489,9 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
             </div>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center bg-white/90">
               <h3 className="text-lg font-extrabold text-gray-900 mb-2">{tSuppliers("comingSoonTitle")}</h3>
-              <span className="bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full">{tSuppliers("comingSoonBadge")}</span>
+              <span className="bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full">
+                {tSuppliers("comingSoonBadge")}
+              </span>
             </div>
           </div>
         </div>
@@ -391,7 +505,7 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
           <p className="text-gray-500 mb-10">{tEurope("subtitle")}</p>
           <div className="relative rounded-2xl overflow-hidden border border-gray-100">
             <div className="blur-sm pointer-events-none select-none grid grid-cols-4 gap-3 p-6">
-              {["Germany","France","Netherlands","Spain","Poland","Italy","Turkey","Egypt"].map((c) => (
+              {["Germany", "France", "Netherlands", "Spain", "Poland", "Italy", "Turkey", "Egypt"].map((c) => (
                 <div key={c} className="bg-white border border-gray-200 rounded-xl p-3 text-center">
                   <div className="text-xs font-bold text-gray-800">{c}</div>
                 </div>
@@ -399,7 +513,9 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
             </div>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center bg-white/90">
               <h3 className="text-lg font-extrabold text-gray-900 mb-2">{tEurope("comingSoonTitle")}</h3>
-              <span className="bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full">{tEurope("comingSoonBadge")}</span>
+              <span className="bg-gray-900 text-white text-xs font-bold px-4 py-1.5 rounded-full">
+                {tEurope("comingSoonBadge")}
+              </span>
             </div>
           </div>
         </div>
@@ -419,16 +535,16 @@ export default function HomeClient({ initialFeatured, initialClearance, offersTa
             <div>
               <h4 className="text-white font-bold mb-4">{tFooter("platform")}</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/" className="hover:text-green-500">{tFooter("home")}</a></li>
-                <li><a href="/products" className="hover:text-green-500">{tFooter("products")}</a></li>
+                <li><a href={`/${locale}`} className="hover:text-green-500">{tFooter("home")}</a></li>
+                <li><a href={`/${locale}/products`} className="hover:text-green-500">{tFooter("products")}</a></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-bold mb-4">{tFooter("company")}</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/about" className="hover:text-green-500">{tFooter("about")}</a></li>
-                <li><a href="/terms" className="hover:text-green-500">{tFooter("terms")}</a></li>
-                <li><a href="/privacy" className="hover:text-green-500">{tFooter("privacy")}</a></li>
+                <li><a href={`/${locale}/about`} className="hover:text-green-500">{tFooter("about")}</a></li>
+                <li><a href={`/${locale}/terms`} className="hover:text-green-500">{tFooter("terms")}</a></li>
+                <li><a href={`/${locale}/privacy`} className="hover:text-green-500">{tFooter("privacy")}</a></li>
               </ul>
             </div>
             <div>
