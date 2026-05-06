@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 interface Product {
   id: string;
@@ -124,7 +124,6 @@ export default function HomeClient({
   const tEurope = useTranslations("europe");
   const tFooter = useTranslations("footer");
 
-  const router = useRouter();
   const pathname = usePathname();
 
   const [userType, setUserType] = useState<"buyer" | "supplier">("buyer");
@@ -135,11 +134,8 @@ export default function HomeClient({
 
   const isRtl = locale === "ar";
 
-  function switchLocale() {
-    const next = locale === "ar" ? "en" : "ar";
-    const newPath = pathname.replace(`/${locale}`, `/${next}`);
-    router.push(newPath);
-  }
+  // ✅ رابط مباشر بدون JS — فوري على iOS بدون تأخير
+  const switchLocaleHref = pathname.replace(`/${locale}`, `/${locale === "ar" ? "en" : "ar"}`);
 
   useEffect(() => {
     if (window.location.search.includes("success=1")) {
@@ -180,12 +176,13 @@ export default function HomeClient({
             <span className="text-2xl font-extrabold text-green-800 tracking-tight">حاوية</span>
           </a>
           <div className="flex items-center gap-3">
-            <button
-              onClick={switchLocale}
+            {/* ✅ تم تحويله لـ <a> بدل <button> — يشتغل فوراً على iOS بدون تأخير */}
+            <a
+              href={switchLocaleHref}
               className="flex items-center gap-1.5 text-sm font-bold text-gray-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-green-500 hover:text-green-700 transition-colors"
             >
               🌐 {locale === "ar" ? "English" : "العربية"}
-            </button>
+            </a>
             <a
               href="#join-form"
               className="bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg"
@@ -554,10 +551,7 @@ export default function HomeClient({
                 <li><span dir="ltr">+966 57 466 8349</span></li>
                 <li><span>info@hawiyasa.com</span></li>
                 <li>
-                  <a
-                    href={`/${locale}/contact`}
-                    className="hover:text-green-500"
-                  >
+                  <a href={`/${locale}/contact`} className="hover:text-green-500">
                     {tFooter("contact")}
                   </a>
                 </li>
