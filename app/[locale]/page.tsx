@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { supabase } from "../lib/supabase";
-import HomeClient from "../HomeClient";
+import HomeClient from "./HomeClient";
+
 
 export const revalidate = 60;
 
