@@ -1,0 +1,116 @@
+{
+    "nav": {
+      "home": "Home",
+      "services": "Services",
+      "offers": "Offers & Products",
+      "suppliers": "Suppliers",
+      "europe": "Import from Europe",
+      "join": "Join Now"
+    },
+    "hero": {
+      "badge": "Saudi Arabia's largest food supplier network — all in one place",
+      "title1": "The Virtual Wholesale",
+      "title2": "Marketplace for",
+      "titleAccent": "Food & FMCG",
+      "subtitle": "We connect factories and suppliers directly with wholesalers, retailers, and restaurants.\nFactory pricing, clearance deals, and daily supply — one platform.",
+      "f1": "✅ Direct access to suppliers — no middlemen",
+      "f2": "✅ Daily clearance deals at factory prices",
+      "f3": "✅ Direct imports from Europe and Turkey",
+      "stat1n": "+500", "stat1l": "Wholesale Products",
+      "stat2n": "+120", "stat2l": "Verified Suppliers",
+      "stat3n": "12",   "stat3l": "Saudi Cities"
+    },
+    "form": {
+      "title": "Start Sourcing — Register Your Business",
+      "subtitle": "Sign up now to be among the first when we launch",
+      "accountType": "Account Type",
+      "buyer": "Buyer / Trader",
+      "supplier": "Supplier / Manufacturer",
+      "company": "Company Name",
+      "companyPlaceholder": "Al Noor Trading Co.",
+      "city": "City",
+      "cityPlaceholder": "Jeddah, Riyadh...",
+      "contactName": "Contact Person",
+      "contactPlaceholder": "Full name",
+      "phone": "Mobile Number",
+      "phonePlaceholder": "05XXXXXXXX",
+      "businessType": "Business Type",
+      "businessTypePlaceholder": "Select business type...",
+      "importer": "Import Company",
+      "manufacturer": "Factory / Manufacturer",
+      "distributor": "Distributor / Wholesaler",
+      "exporter": "Export Company",
+      "retailer": "Retailer / Hypermarket",
+      "submit": "Submit & Join the Platform",
+      "submitting": "Submitting...",
+      "successTitle": "Request Received!",
+      "successBody": "Our sales team will be in touch with you shortly.",
+      "successBtn": "Submit Another Request"
+    },
+    "services": {
+      "label": "WHAT WE OFFER",
+      "title": "Our Services",
+      "subtitle": "Everything a wholesaler or retailer needs — in one place.",
+      "s1title": "Products & Offers",
+      "s1body": "Browse hundreds of food and cleaning products from verified suppliers at wholesale prices — with direct ordering and no middlemen.",
+      "s2title": "Clearance & Stock Deals",
+      "s2body": "Exclusive opportunities on factory overstock and clearance batches at highly competitive prices — ideal for traders looking for higher margins.",
+      "s3title": "Import & Export",
+      "s3body": "We connect you directly with factories and suppliers in Europe, Turkey, and the Middle East for factory-price imports or to export your products abroad.",
+      "s4title": "Daily Supply Matching",
+      "s4body": "We link wholesalers and retailers with suppliers for regular supply contracts, with tailored offers and fixed pricing to keep your operations running smoothly."
+    },
+    "offers": {
+      "label": "TODAY'S DEALS",
+      "title": "Current Offers & Products",
+      "subtitle": "Order directly — right now.",
+      "viewAll": "View All →",
+      "tabProducts": "📦 Products",
+      "tabClearance": "🏷️ Clearance & Stock",
+      "btnProducts": "Browse All Products →",
+      "btnClearance": "View All Clearance →",
+      "emptyProducts": "No products available right now.",
+      "emptyClearance": "No clearance items available right now."
+    },
+    "card": {
+      "outOfStock": "Out of Stock",
+      "clearanceBadge": "🏷️ Clearance",
+      "unavailable": "Unavailable",
+      "orderNow": "💬 Order Now",
+      "minOrder": "Min. Order:",
+      "waMsg": "Hello, I'd like to order this product from Hawiyah:\n📦 {name}\n💰 Price: {price} SAR / {unit}\nQuantity needed: "
+    },
+    "suppliers": {
+      "label": "SUPPLIERS",
+      "title": "Suppliers & Daily Supply",
+      "subtitle": "Order directly from verified suppliers in bulk quantities.",
+      "comingSoonTitle": "This section is being prepared",
+      "comingSoonBadge": "Coming Soon"
+    },
+    "europe": {
+      "label": "INTERNATIONAL SOURCING",
+      "title": "Import at Factory Prices — Direct",
+      "subtitle": "We connect you with top manufacturers and suppliers across Europe and the Middle East.",
+      "comingSoonTitle": "This section is being prepared",
+      "comingSoonBadge": "Coming Soon"
+    },
+    "footer": {
+      "tagline": "Saudi Arabia's virtual wholesale marketplace for food and FMCG.",
+      "platform": "Platform",
+      "home": "Home",
+      "products": "Wholesale Products",
+      "company": "Company",
+      "about": "About Us",
+      "terms": "Terms & Conditions",
+      "privacy": "Privacy Policy",
+      "support": "Customer Support",
+      "copyright": "All rights reserved © 2026 Hawiyah Information Technology",
+      "location": "Kingdom of Saudi Arabia — Jeddah"
+    },
+    "meta": {
+      "title": "Hawiyah | Saudi Arabia's Wholesale Food Supply Marketplace",
+      "description": "Hawiyah connects manufacturers and suppliers directly with wholesalers, retailers, hypermarkets, and distributors across Saudi Arabia. Factory prices, daily supply, and clearance deals — all in one place.",
+      "layoutTitle": "Hawiyah | Saudi Arabia's Largest Virtual Wholesale Marketplace",
+      "layoutDesc": "We connect factories and suppliers directly with retailers and restaurants. Factory pricing, clearance deals, and daily supply — all in one place."
+    }
+  }
