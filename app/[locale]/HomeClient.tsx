@@ -384,7 +384,7 @@ export default function HomeClient({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
-              { bg: "bg-green-50", stroke: "#01696f", title: tServices("s1title"), body: tServices("s1body") },
+              { bg: "bg-green-50",  stroke: "#01696f", title: tServices("s1title"), body: tServices("s1body") },
               { bg: "bg-orange-50", stroke: "#da7101", title: tServices("s2title"), body: tServices("s2body") },
               { bg: "bg-blue-50",   stroke: "#006494", title: tServices("s3title"), body: tServices("s3body") },
               { bg: "bg-green-50",  stroke: "#01696f", title: tServices("s4title"), body: tServices("s4body") },
@@ -537,6 +537,7 @@ export default function HomeClient({
               <ul className="space-y-3 text-sm text-gray-400">
                 <li><a href={`/${locale}`} className="hover:text-green-500">{tFooter("home")}</a></li>
                 <li><a href={`/${locale}/products`} className="hover:text-green-500">{tFooter("products")}</a></li>
+                <li><a href={`/${locale}/contact`} className="hover:text-green-500">{tFooter("contact")}</a></li>
               </ul>
             </div>
             <div>
@@ -552,6 +553,14 @@ export default function HomeClient({
               <ul className="space-y-3 text-sm text-gray-400">
                 <li><span dir="ltr">+966 57 466 8349</span></li>
                 <li><span>info@hawiyasa.com</span></li>
+                <li>
+                  <a
+                    href={`/${locale}/contact`}
+                    className="hover:text-green-500"
+                  >
+                    {tFooter("contact")}
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
@@ -561,6 +570,7 @@ export default function HomeClient({
           </div>
         </div>
       </footer>
+
     </div>
   );
 }
