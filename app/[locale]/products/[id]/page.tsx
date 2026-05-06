@@ -64,7 +64,7 @@ export default async function ProductPage({ params }: Props) {
 
   const relatedProducts = await getRelatedProducts(product.category, product.id);
 
-  const waUrl = `https://wa.me/966535189367?text=${encodeURIComponent(
+  const waUrl = `https://wa.me/966574668349?text=${encodeURIComponent(
     `مرحباً، أريد طلب هذا المنتج من منصة حاوية:\n📦 ${product.name}\n💰 السعر: ${product.price} ﷼ / ${product.unit}\nالكمية المطلوبة: `
   )}`;
 

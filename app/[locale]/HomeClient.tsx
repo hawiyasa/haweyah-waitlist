@@ -16,7 +16,7 @@ interface Product {
   description?: string | null;
 }
 
-const WHATSAPP = "966535189367";
+const WHATSAPP = "966574668349";
 
 function buildWaUrl(product: Product, msg: string) {
   const text = msg
@@ -550,7 +550,7 @@ export default function HomeClient({
             <div>
               <h4 className="text-white font-bold mb-4">{tFooter("support")}</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><span dir="ltr">+966 53 518 9367</span></li>
+                <li><span dir="ltr">+966 57 466 8349</span></li>
                 <li><span>info@hawiyasa.com</span></li>
               </ul>
             </div>

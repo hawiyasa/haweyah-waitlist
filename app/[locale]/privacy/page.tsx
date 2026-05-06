@@ -81,8 +81,8 @@ export default async function PrivacyPage({
             {
               title: isAr ? "5. التواصل معنا" : "5. Contact Us",
               content: isAr
-                ? "للاستفسار: info@hawiyasa.com | +966535189367"
-                : "For inquiries: info@hawiyasa.com | +966535189367",
+                ? "للاستفسار: info@hawiyasa.com | +966574668349"
+                : "For inquiries: info@hawiyasa.com | +966574668349",
             },
           ].map((section) => (
             <section key={section.title} className="mb-10">

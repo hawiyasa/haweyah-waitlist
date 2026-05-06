@@ -73,7 +73,7 @@ export default async function HomePage({
         : "The virtual wholesale marketplace connecting suppliers with wholesalers, retailers, and hypermarkets across Saudi Arabia.",
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+966-53-518-9367",
+      telephone: "+966-57-466-8349",
       contactType: "customer service",
       areaServed: "SA",
       availableLanguage: locale === "ar" ? "Arabic" : "English",
