@@ -3,24 +3,41 @@ import { supabase } from "../../lib/supabase";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// تنظيف النص من HTML وعلامات XML وتحديد الطول
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+
 function clean(text: string | null | undefined, max = 5000): string {
   if (!text) return "";
   return text
-    .replace(/<[^>]*>/g, "")       // احذف HTML tags
-    .replace(/&/g, "&amp;")        // escape علامات XML
+    .replace(/<[^>]*>/g, "")
+    .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/\s+/g, " ")          // نظّف مسافات زائدة
+    .replace(/\s+/g, " ")
     .trim()
-    .slice(0, max);                 // حدّ الطول
+    .slice(0, max);
+}
+
+function getImageUrl(imageUrl: string | null): string {
+  if (!imageUrl) return "https://www.hawiyasa.com/logo.png";
+
+  // base64 أو data URI — استخدم صورة افتراضية
+  if (imageUrl.startsWith("data:")) {
+    return "https://www.hawiyasa.com/logo.png";
+  }
+
+  // رابط كامل — استخدمه مباشرة
+  if (imageUrl.startsWith("http")) {
+    return imageUrl;
+  }
+
+  // مسار جزئي — أكمله برابط Supabase Storage
+  return `${SUPABASE_URL}/storage/v1/object/public/products/${imageUrl}`;
 }
 
 export async function GET() {
   const BASE_URL = "https://www.hawiyasa.com";
 
-  // ✅ اختر الأعمدة الضرورية فقط — لا تستخدم select("*")
   const { data: products } = await supabase
     .from("products")
     .select("id, name, description, price, image_url, category, in_stock")
@@ -33,7 +50,7 @@ export async function GET() {
       const price = `${Number(p.price).toFixed(2)} SAR`;
       const avail = p.in_stock === false ? "out of stock" : "in stock";
       const link  = `${BASE_URL}/ar/products/${p.id}`;
-      const img   = p.image_url || "https://www.hawiyasa.com/logo.png";
+      const img   = getImageUrl(p.image_url);
 
       return `
     <item>
